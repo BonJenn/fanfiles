@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import Link from "next/link";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -30,10 +31,10 @@ export default function RootLayout({
       >
         <nav className="border-b p-4">
           <div className="container mx-auto flex justify-between items-center">
-            <h1 className="text-2xl font-bold">FanFiles</h1>
+            <Link href="/" className="text-2xl font-bold">FanFiles</Link>
             <div className="space-x-4">
-              <a href="/login" className="text-gray-600 hover:text-gray-900">Login</a>
-              <a href="/signup" className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800">Sign Up</a>
+              <Link href="/login" className="text-gray-600 hover:text-gray-900">Login</Link>
+              <Link href="/signup" className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800">Sign Up</Link>
             </div>
           </div>
         </nav>
