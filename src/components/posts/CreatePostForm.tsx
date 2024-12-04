@@ -9,7 +9,7 @@ interface CreatePostFormProps {
   onCancel?: () => void;
 }
 
-export const CreatePostForm = ({ onSuccess, _onCancel }: CreatePostFormProps) => {
+export const CreatePostForm = ({ onSuccess, onCancel }: CreatePostFormProps) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
