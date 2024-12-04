@@ -6,7 +6,7 @@ import Image from 'next/image';
 
 interface CreatePostFormProps {
   onSuccess?: () => void;
-  _onCancel?: () => void;
+  onCancel?: () => void;
 }
 
 export const CreatePostForm = ({ onSuccess, _onCancel }: CreatePostFormProps) => {
