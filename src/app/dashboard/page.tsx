@@ -249,6 +249,7 @@ function SubscribersList({ creatorId }: { creatorId: string }) {
   const [subscribers, setSubscribers] = useState<{
     id: string;
     created_at: string;
+    subscriber_id: string;
     profiles: {
       name: string;
       avatar_url: string;
@@ -262,19 +263,27 @@ function SubscribersList({ creatorId }: { creatorId: string }) {
       try {
         const { data, error } = await supabase
           .from('subscriptions')
-          .select('id, created_at, profiles:subscriber_id(name, avatar_url)')
+          .select(`
+            id,
+            created_at,
+            subscriber_id,
+            profiles:subscriber_id (
+              name,
+              avatar_url
+            )
+          `)
           .eq('creator_id', creatorId)
           .order('created_at', { ascending: false });
 
         if (error) throw error;
 
-        // Transform the data to match our type definition
         const transformedData = (data || []).map(item => ({
           id: item.id,
           created_at: item.created_at,
+          subscriber_id: item.subscriber_id,
           profiles: {
-            name: item.profiles[0]?.name || 'Unknown User',
-            avatar_url: item.profiles[0]?.avatar_url || ''
+            name: item.profiles?.name || 'Unknown User',
+            avatar_url: item.profiles?.avatar_url || ''
           }
         }));
 
