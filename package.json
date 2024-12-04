@@ -16,13 +16,16 @@
     "@supabase/supabase-js": "^2.46.2",
     "@tanstack/react-query": "^5.62.2",
     "@types/chart.js": "^2.9.41",
+    "@types/lodash": "^4.17.13",
     "autoprefixer": "^10.4.20",
     "axios": "^1.7.8",
     "chart.js": "^4.4.7",
+    "lodash": "^4.17.21",
     "next": "14.x.x",
     "react": "^18.2.0",
     "react-chartjs-2": "^5.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-intersection-observer": "^9.13.1"
   },
   "devDependencies": {
     "@types/node": "^20",

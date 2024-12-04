@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Post } from '@/types/post';
 import { PostCard } from './PostCard';
 import { supabase } from '@/lib/supabase';
+import { useInView } from 'react-intersection-observer';
+import debounce from 'lodash/debounce';
 
 interface FeedProps {
   subscribedContent: boolean;
@@ -14,6 +16,7 @@ type ContentType = 'all' | 'image' | 'video';
 export const Feed = ({ subscribedContent, creatorId }: FeedProps) => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [sortBy, setSortBy] = useState<SortOption>('newest');
@@ -21,15 +24,39 @@ export const Feed = ({ subscribedContent, creatorId }: FeedProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const postsPerPage = 9;
 
+  // Infinite scroll setup
+  const { ref: loadMoreRef, inView } = useInView({
+    threshold: 0.5,
+    delay: 100
+  });
+
+  // Debounced search
+  const debouncedSearch = useCallback(
+    debounce((query: string) => {
+      setSearchQuery(query);
+      setPage(1);
+      setPosts([]);
+    }, 500),
+    []
+  );
+
+  useEffect(() => {
+    if (inView && hasMore && !loading) {
+      setPage(p => p + 1);
+    }
+  }, [inView, hasMore, loading]);
+
   useEffect(() => {
     setPage(1);
     setPosts([]);
+    setError(null);
     fetchPosts();
   }, [subscribedContent, creatorId, sortBy, contentType, searchQuery]);
 
   const fetchPosts = async () => {
     try {
       setLoading(true);
+      setError(null);
       const from = (page - 1) * postsPerPage;
       const to = from + postsPerPage - 1;
 
@@ -76,17 +103,20 @@ export const Feed = ({ subscribedContent, creatorId }: FeedProps) => {
       // Apply subscription filter
       if (subscribedContent) {
         const { data: { user } } = await supabase.auth.getUser();
-        query = query.eq('creator.subscribed_to', user?.id);
+        if (!user) throw new Error('User not authenticated');
+        query = query.eq('creator.subscribed_to', user.id);
       } else if (creatorId) {
         query = query.eq('creator_id', creatorId);
       }
 
-      const { data, error } = await query;
-      if (error) throw error;
+      const { data, error: fetchError } = await query;
+      
+      if (fetchError) throw fetchError;
 
       setPosts(prev => page === 1 ? data : [...prev, ...data]);
       setHasMore(data.length === postsPerPage);
-    } catch (error) {
+    } catch (error: any) {
+      setError(error.message || 'Failed to load posts');
       console.error('Error fetching posts:', error);
     } finally {
       setLoading(false);
@@ -99,12 +129,11 @@ export const Feed = ({ subscribedContent, creatorId }: FeedProps) => {
       <div className="bg-white p-4 rounded-lg shadow-sm space-y-4">
         <div className="flex flex-wrap gap-4">
           {/* Search Bar */}
-          <div className="flex-1 min-w-[200px]">
+          <div className="flex-1 min-w-[200px] relative">
             <input
               type="search"
               placeholder="Search posts..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => debouncedSearch(e.target.value)}
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
             />
           </div>
@@ -140,31 +169,47 @@ export const Feed = ({ subscribedContent, creatorId }: FeedProps) => {
         </div>
       </div>
 
-      {/* Posts Grid */}
-      {loading && page === 1 ? (
-        <div className="text-center py-8">Loading...</div>
-      ) : posts.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
-          No posts found. Try adjusting your filters.
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {posts.map((post) => (
-            <PostCard key={post.id} post={post} />
-          ))}
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-50 text-red-500 p-4 rounded-lg text-center">
+          {error}
+          <button
+            onClick={() => fetchPosts()}
+            className="ml-2 underline hover:no-underline"
+          >
+            Try again
+          </button>
         </div>
       )}
 
-      {/* Load More Button */}
-      {hasMore && (
-        <div className="flex justify-center pb-8">
-          <button
-            onClick={() => setPage(p => p + 1)}
-            disabled={loading}
-            className="px-6 py-2 bg-black text-white rounded-full hover:bg-gray-800 disabled:opacity-50"
+      {/* Posts Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {posts.map((post) => (
+          <PostCard key={post.id} post={post} />
+        ))}
+        
+        {/* Loading skeletons */}
+        {loading && Array.from({ length: 3 }).map((_, i) => (
+          <div
+            key={`skeleton-${i}`}
+            className="bg-white rounded-lg overflow-hidden shadow-sm animate-pulse"
           >
-            {loading ? 'Loading...' : 'Load More'}
-          </button>
+            <div className="h-48 bg-gray-200" />
+            <div className="p-4 space-y-3">
+              <div className="h-4 bg-gray-200 rounded w-3/4" />
+              <div className="h-4 bg-gray-200 rounded w-1/2" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Load More Trigger */}
+      {hasMore && !loading && <div ref={loadMoreRef} className="h-10" />}
+
+      {/* Empty State */}
+      {!loading && posts.length === 0 && (
+        <div className="text-center py-8 text-gray-500">
+          No posts found. Try adjusting your filters.
         </div>
       )}
     </div>
