@@ -273,8 +273,8 @@ function SubscribersList({ creatorId }: { creatorId: string }) {
           id: item.id,
           created_at: item.created_at,
           profiles: {
-            name: item.profiles.name,
-            avatar_url: item.profiles.avatar_url
+            name: item.profiles[0]?.name || 'Unknown User',
+            avatar_url: item.profiles[0]?.avatar_url || ''
           }
         }));
 
