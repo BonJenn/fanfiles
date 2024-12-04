@@ -97,9 +97,6 @@ export default function Dashboard() {
     fetchProfileAndStats();
   }, []);
 
-  const handlePostCreated = () => {
-    setShowCreatePost(false);
-    fetchProfileAndStats(); // Refresh stats
   };
 
   if (loading) {

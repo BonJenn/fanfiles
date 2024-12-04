@@ -5,8 +5,6 @@ import Image from 'next/image';
 import { LockIcon, PlayIcon } from 'lucide-react';
 import { loadStripe } from '@stripe/stripe-js';
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
-
 interface PostCardProps {
   post: {
     id: string;
@@ -38,6 +36,10 @@ export const PostCard = ({ post }: PostCardProps) => {
 
   const handlePurchase = async () => {
     const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+    if (!stripe) {
+      console.error('Failed to load Stripe');
+      return;
+    }
     try {
       setIsLoading(true);
       setError(null);
