@@ -237,7 +237,6 @@ export default function Dashboard() {
             // Refresh the feed
             router.refresh();
           }}
-          onCancel={() => setShowCreatePost(false)}
         />
       </Modal>
     </div>
