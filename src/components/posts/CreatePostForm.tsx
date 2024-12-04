@@ -51,7 +51,7 @@ export const CreatePostForm = ({ onSuccess, _onCancel }: CreatePostFormProps) =>
       // Upload file
       const fileExt = formData.file.name.split('.').pop();
       const fileName = `${user.id}-${Math.random()}.${fileExt}`;
-      const { error: uploadError, data } = await supabase.storage
+      const { error: uploadError, data: _data } = await supabase.storage
         .from('posts')
         .upload(fileName, formData.file);
 
@@ -61,7 +61,7 @@ export const CreatePostForm = ({ onSuccess, _onCancel }: CreatePostFormProps) =>
       const { error: postError } = await supabase
         .from('posts')
         .insert({
-          url: data.path,
+          url: _data.path,
           type: formData.type,
           description: formData.description,
           price: formData.price,
