@@ -246,7 +246,14 @@ export default function Dashboard() {
 
 // New component for Subscribers List
 function SubscribersList({ creatorId }: { creatorId: string }) {
-  const [subscribers, setSubscribers] = useState<{ id: string; profiles: { name: string; avatar_url: string } }[]>([]);
+  const [subscribers, setSubscribers] = useState<{
+    id: string;
+    created_at: string;
+    profiles: {
+      name: string;
+      avatar_url: string;
+    };
+  }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -255,7 +262,7 @@ function SubscribersList({ creatorId }: { creatorId: string }) {
       try {
         const { data, error } = await supabase
           .from('subscriptions')
-          .select('*, profiles(name, avatar_url)')
+          .select('id, created_at, profiles(name, avatar_url)')
           .eq('creator_id', creatorId)
           .order('created_at', { ascending: false });
 
