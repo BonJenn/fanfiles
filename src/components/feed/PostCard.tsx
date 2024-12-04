@@ -11,7 +11,7 @@ interface PostCardProps {
     url: string;
     type: 'image' | 'video';
     description: string;
-    price: number;
+    price?: number;
     is_public: boolean;
     creator_id: string;
     creator: {

@@ -246,7 +246,7 @@ export default function Dashboard() {
 
 // New component for Subscribers List
 function SubscribersList({ creatorId }: { creatorId: string }) {
-  const [subscribers, setSubscribers] = useState<any[]>([]);
+  const [subscribers, setSubscribers] = useState<{ id: string; profiles: { name: string; avatar_url: string } }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

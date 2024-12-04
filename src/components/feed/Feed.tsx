@@ -91,8 +91,18 @@ export const Feed = ({ subscribedContent, creatorId }: FeedProps) => {
       
       if (fetchError) throw fetchError;
 
-      setPosts(prev => page === 1 ? data : [...prev, ...data]);
-      setHasMore(data.length === postsPerPage);
+      // Transform the data to match Post interface
+      const typedData = (data || []).map(item => ({
+        ...item,
+        creator: {
+          id: item.creator.id,
+          name: item.creator.name,
+          avatar_url: item.creator.avatar_url
+        }
+      })) as Post[];
+
+      setPosts(prev => page === 1 ? typedData : [...prev, ...typedData]);
+      setHasMore(typedData.length === postsPerPage);
     } catch (err) {
       const error = err as ApiError;
       setError(error.message || 'Failed to load posts');
