@@ -262,12 +262,23 @@ function SubscribersList({ creatorId }: { creatorId: string }) {
       try {
         const { data, error } = await supabase
           .from('subscriptions')
-          .select('id, created_at, profiles(name, avatar_url)')
+          .select('id, created_at, profiles:subscriber_id(name, avatar_url)')
           .eq('creator_id', creatorId)
           .order('created_at', { ascending: false });
 
         if (error) throw error;
-        setSubscribers(data || []);
+
+        // Transform the data to match our type definition
+        const transformedData = (data || []).map(item => ({
+          id: item.id,
+          created_at: item.created_at,
+          profiles: {
+            name: item.profiles.name,
+            avatar_url: item.profiles.avatar_url
+          }
+        }));
+
+        setSubscribers(transformedData);
       } catch (error: any) {
         setError(error.message);
       } finally {
