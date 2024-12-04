@@ -152,7 +152,7 @@ export const PostCard = ({ post }: PostCardProps) => {
         {!post.is_public && (
           <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
             <LockIcon className="w-8 h-8 mb-2" />
-            <p className="font-medium">${(post.price / 100).toFixed(2)}</p>
+            <p className="font-medium">${((post.price ?? 0) / 100).toFixed(2)}</p>
             <button
               onClick={handlePurchase}
               disabled={isLoading}
