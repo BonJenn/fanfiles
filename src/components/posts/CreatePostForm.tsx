@@ -6,9 +6,10 @@ import Image from 'next/image';
 
 interface CreatePostFormProps {
   onSuccess?: () => void;
+  onCancel?: () => void;
 }
 
-export const CreatePostForm = ({ onSuccess }: CreatePostFormProps) => {
+export const CreatePostForm = ({ onSuccess, onCancel }: CreatePostFormProps) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
