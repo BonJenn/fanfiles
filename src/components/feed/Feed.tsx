@@ -5,7 +5,6 @@ import { Post } from '@/types/post';
 import { PostCard } from './PostCard';
 import { supabase } from '@/lib/supabase';
 import { useInView } from 'react-intersection-observer';
-import debounce from 'lodash/debounce';
 import type { ApiError } from '@/types/error';
 
 interface FeedProps {
@@ -112,6 +111,11 @@ export const Feed = ({ subscribedContent, creatorId }: FeedProps) => {
     fetchPosts();
   }, [fetchPosts]);
 
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    // Add your search logic here
+  };
+
   return (
     <div className="space-y-6">
       {/* Filter Controls */}
@@ -122,7 +126,7 @@ export const Feed = ({ subscribedContent, creatorId }: FeedProps) => {
             <input
               type="search"
               placeholder="Search posts..."
-              onChange={(e) => debouncedSearch(e.target.value)}
+              onChange={(e) => handleSearch(e.target.value)}
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
             />
           </div>

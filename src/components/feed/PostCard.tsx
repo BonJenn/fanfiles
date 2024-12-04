@@ -37,6 +37,7 @@ export const PostCard = ({ post }: PostCardProps) => {
   };
 
   const handlePurchase = async () => {
+    const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
     try {
       setIsLoading(true);
       setError(null);

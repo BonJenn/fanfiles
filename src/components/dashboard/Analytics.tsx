@@ -110,30 +110,6 @@ export function Analytics({ creatorId }: AnalyticsProps) {
     );
   }
 
-  const chartData = {
-    labels: data.dates.map(date => new Date(date).toLocaleDateString()),
-    datasets: [
-      {
-        label: 'Views',
-        data: data.views,
-        borderColor: 'rgb(75, 192, 192)',
-        tension: 0.1
-      },
-      {
-        label: 'Revenue ($)',
-        data: data.revenue,
-        borderColor: 'rgb(153, 102, 255)',
-        tension: 0.1
-      },
-      {
-        label: 'New Subscribers',
-        data: data.subscribers,
-        borderColor: 'rgb(255, 99, 132)',
-        tension: 0.1
-      }
-    ]
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex justify-end space-x-2">

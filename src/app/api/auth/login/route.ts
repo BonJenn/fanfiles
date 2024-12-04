@@ -1,7 +1,7 @@
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { ApiError } from '@/types/error';
+import type { ApiError } from '@/types/error';
 
 export async function POST(request: Request) {
   try {
@@ -17,11 +17,12 @@ export async function POST(request: Request) {
     if (error) throw error;
 
     return NextResponse.json({ success: true, session: data.session });
-  } catch (error: ApiError) {
-    console.error('Login error:', error);
+  } catch (error: unknown) {
+    const err = error as ApiError;
+    console.error('Login error:', err);
     return NextResponse.json(
-      { error: error.message || 'Authentication failed' },
-      { status: error.status || 500 }
+      { error: err.message || 'Authentication failed' },
+      { status: err.status || 500 }
     );
   }
 }
