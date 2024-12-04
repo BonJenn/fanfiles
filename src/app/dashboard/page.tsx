@@ -245,6 +245,16 @@ export default function Dashboard() {
 }
 
 // New component for Subscribers List
+type SubscriptionResponse = {
+  id: string;
+  created_at: string;
+  subscriber_id: string;
+  profiles: {
+    name: string | null;
+    avatar_url: string | null;
+  };
+}
+
 function SubscribersList({ creatorId }: { creatorId: string }) {
   const [subscribers, setSubscribers] = useState<{
     id: string;
@@ -267,13 +277,14 @@ function SubscribersList({ creatorId }: { creatorId: string }) {
             id,
             created_at,
             subscriber_id,
-            profiles:subscriber_id (
+            profiles:profiles!subscriber_id(
               name,
               avatar_url
             )
           `)
           .eq('creator_id', creatorId)
-          .order('created_at', { ascending: false });
+          .order('created_at', { ascending: false })
+          .returns<SubscriptionResponse[]>();
 
         if (error) throw error;
 
@@ -282,8 +293,8 @@ function SubscribersList({ creatorId }: { creatorId: string }) {
           created_at: item.created_at,
           subscriber_id: item.subscriber_id,
           profiles: {
-            name: item.profiles?.name || 'Unknown User',
-            avatar_url: item.profiles?.avatar_url || ''
+            name: item.profiles?.name ?? 'Unknown User',
+            avatar_url: item.profiles?.avatar_url ?? ''
           }
         }));
 
