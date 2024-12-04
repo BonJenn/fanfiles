@@ -15,6 +15,23 @@ interface FeedProps {
 type SortOption = 'newest' | 'oldest' | 'price_high' | 'price_low';
 type ContentType = 'all' | 'image' | 'video';
 
+// First, define the type for the Supabase response
+type PostResponse = {
+  id: string;
+  url: string;
+  type: 'image' | 'video';
+  description: string;
+  price: number;
+  is_public: boolean;
+  created_at: string;
+  creator_id: string;
+  creator: {
+    id: string;
+    name: string;
+    avatar_url: string;
+  };
+}
+
 export const Feed = ({ subscribedContent, creatorId }: FeedProps) => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -87,11 +104,10 @@ export const Feed = ({ subscribedContent, creatorId }: FeedProps) => {
         query = query.eq('creator_id', creatorId);
       }
 
-      const { data, error: fetchError } = await query;
+      const { data, error: fetchError } = await query.returns<PostResponse[]>();
       
       if (fetchError) throw fetchError;
 
-      // Transform the data to match Post interface
       const typedData = (data || []).map(item => ({
         ...item,
         creator: {
@@ -99,7 +115,7 @@ export const Feed = ({ subscribedContent, creatorId }: FeedProps) => {
           name: item.creator.name,
           avatar_url: item.creator.avatar_url
         }
-      })) as Post[];
+      }));
 
       setPosts(prev => page === 1 ? typedData : [...prev, ...typedData]);
       setHasMore(typedData.length === postsPerPage);
