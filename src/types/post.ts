@@ -9,8 +9,13 @@ export interface User {
     url: string;
     type: 'image' | 'video';
     description: string;
-    isAccessible: boolean;
-    createdAt: string;
-    creator: User;
     price?: number;
+    is_public: boolean;
+    created_at: string;
+    creator_id: string;
+    creator: {
+      id: string;
+      name: string;
+      avatar_url: string;
+    };
   }
