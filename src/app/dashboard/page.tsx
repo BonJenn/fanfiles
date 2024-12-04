@@ -226,7 +226,11 @@ export default function Dashboard() {
       </div>
 
       {/* Create Post Modal */}
-      <Modal isOpen={showCreatePost} onClose={() => setShowCreatePost(false)}>
+      <Modal
+        isOpen={showCreatePost}
+        onClose={() => setShowCreatePost(false)}
+        title="Create a New Post"
+      >
         <CreatePostForm
           onSuccess={() => {
             setShowCreatePost(false);
