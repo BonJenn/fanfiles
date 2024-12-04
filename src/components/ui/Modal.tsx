@@ -33,7 +33,7 @@ interface ModalProps {
               </button>
             </div>
             
-            {/* Content */}
+            {/* More Content */}
             <div className="p-6">
               {children}
             </div>
