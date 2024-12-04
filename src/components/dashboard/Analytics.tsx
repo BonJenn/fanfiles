@@ -9,6 +9,12 @@ interface AnalyticsProps {
 }
 
 export function Analytics({ creatorId }: AnalyticsProps) {
+  const [data, setData] = useState({
+    dates: [],
+    views: [],
+    revenue: [],
+    subscribers: []
+  });
   const [timeframe, setTimeframe] = useState<'7d' | '30d' | '90d'>('30d');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
