@@ -31,27 +31,24 @@ export const Feed = ({ subscribedContent, creatorId }: FeedProps) => {
   });
 
   // Debounced search
-  const debouncedSearch = useCallback(
-    debounce((query: string) => {
-      setSearchQuery(query);
-      setPage(1);
-      setPosts([]);
-    }, 500),
-    []
-  );
+  const debouncedSearch = useCallback((query: string) => {
+    setSearchQuery(query);
+    setPage(1);
+    setPosts([]);
+  }, [setSearchQuery, setPage, setPosts]);
 
   useEffect(() => {
     if (inView && hasMore && !loading) {
       setPage(p => p + 1);
     }
-  }, [inView, hasMore, loading]);
+  }, [inView, hasMore, loading, setPage]);
 
   useEffect(() => {
     setPage(1);
     setPosts([]);
     setError(null);
     fetchPosts();
-  }, [subscribedContent, creatorId, sortBy, contentType, searchQuery]);
+  }, [subscribedContent, creatorId, sortBy, contentType, searchQuery, fetchPosts]);
 
   const fetchPosts = async () => {
     try {

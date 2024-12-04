@@ -3,6 +3,9 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import Image from 'next/image';
 import { LockIcon, PlayIcon } from 'lucide-react';
+import { loadStripe } from '@stripe/stripe-js';
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 interface PostCardProps {
   post: {
@@ -25,7 +28,7 @@ export const PostCard = ({ post }: PostCardProps) => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isBlurred, setIsBlurred] = useState(!post.is_public);
+  const isBlurred = !post.is_public;
   const [isPlaying, setIsPlaying] = useState(false);
 
   const handleCreatorClick = (e: React.MouseEvent) => {
@@ -44,11 +47,28 @@ export const PostCard = ({ post }: PostCardProps) => {
         return;
       }
 
-      // TODO: Implement Stripe checkout
-      console.log('Purchase content:', post.id);
+      // Create Stripe checkout session
+      const response = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          postId: post.id,
+          creatorId: post.creator_id,
+          price: post.price,
+          returnUrl: window.location.href,
+        }),
+      });
+
+      const { url, error: checkoutError } = await response.json();
       
-    } catch (err) {
-      setError('Failed to process purchase. Please try again.');
+      if (checkoutError) throw new Error(checkoutError);
+      
+      // Redirect to Stripe checkout
+      window.location.href = url;
+    } catch (err: any) {
+      setError(err.message || 'Failed to process purchase. Please try again.');
       console.error('Purchase error:', err);
     } finally {
       setIsLoading(false);

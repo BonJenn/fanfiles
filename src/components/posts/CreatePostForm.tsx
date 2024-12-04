@@ -82,8 +82,8 @@ export const CreatePostForm = ({ onSuccess }: CreatePostFormProps) => {
       
       // Call success callback
       onSuccess?.();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (error: Error) {
+      setError(error.message || 'Failed to create post');
     } finally {
       setLoading(false);
     }

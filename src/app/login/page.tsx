@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
 
 export default function Login() {
@@ -9,7 +8,6 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,15 +23,13 @@ export default function Login() {
       if (error) throw error;
       
       if (data?.session) {
-        // Wait for session to be set
-        await new Promise((resolve) => setTimeout(resolve, 500));
         window.location.href = '/dashboard';
       } else {
         throw new Error('No session after login');
       }
-    } catch (error: any) {
+    } catch (error: Error) {
       console.error('Error logging in:', error);
-      setError(error.message || 'Failed to login. Please check your credentials.');
+      setError(error.message || 'Failed to login');
     } finally {
       setLoading(false);
     }

@@ -2,25 +2,19 @@
 
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 
 export default function Signup() {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    name: '',
-    confirmPassword: '',
+    name: ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [debug, setDebug] = useState<string>('');
   const [signupStatus, setSignupStatus] = useState<{
-    user: any;
-    session: any;
-    needsEmailConfirmation: boolean;
+    needsEmailConfirmation?: boolean;
+    error?: Error;
   } | null>(null);
-  const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -34,38 +28,23 @@ export default function Signup() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    console.log('Starting signup...');
-
+    
     try {
-      if (formData.password !== formData.confirmPassword) {
-        throw new Error('Passwords do not match');
-      }
-
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
-          data: { name: formData.name },
-          emailRedirectTo: `${window.location.origin}/auth/callback`
+          data: {
+            name: formData.name
+          }
         }
       });
-
-      console.log('Auth response:', authData);
-
-      if (authError) {
-        console.error('Auth error:', authError);
-        throw authError;
-      }
-
-      setSignupStatus({
-        user: authData.user,
-        session: authData.session,
-        needsEmailConfirmation: true
-      });
-
-    } catch (error: any) {
-      console.error('Signup error:', error);
-      setError(error.message);
+      
+      if (error) throw error;
+      
+      setSignupStatus({ needsEmailConfirmation: true });
+    } catch (error: Error) {
+      setError(error.message || 'Failed to sign up');
     } finally {
       setLoading(false);
     }
@@ -90,12 +69,6 @@ export default function Signup() {
             </div>
           )}
 
-          {debug && (
-            <div className="mb-4 p-3 bg-gray-50 text-gray-600 rounded-md text-xs font-mono">
-              {debug}
-            </div>
-          )}
-
           <form onSubmit={handleSignup} className="space-y-4">
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700">Email</label>
@@ -114,17 +87,6 @@ export default function Signup() {
                 type="password"
                 name="password"
                 value={formData.password}
-                onChange={handleChange}
-                required
-                className="mt-1 block w-full"
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">Confirm Password</label>
-              <input
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
                 onChange={handleChange}
                 required
                 className="mt-1 block w-full"
@@ -161,10 +123,6 @@ export default function Signup() {
               </button>
             </div>
           </form>
-
-          <p className="mt-2 text-center text-sm text-gray-500">
-            Already have an account? <Link className="font-medium text-indigo-600 hover:text-indigo-500" href="/login">Login</Link>
-          </p>
         </>
       )}
     </div>

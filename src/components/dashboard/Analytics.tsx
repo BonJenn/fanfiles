@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Line } from 'react-chartjs-2';
 import {
@@ -42,9 +42,9 @@ export function Analytics({ creatorId }: AnalyticsProps) {
 
   useEffect(() => {
     fetchAnalytics();
-  }, [timeframe, creatorId]);
+  }, [timeframe, creatorId, fetchAnalytics]);
 
-  const fetchAnalytics = async () => {
+  const fetchAnalytics = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -107,13 +107,12 @@ export function Analytics({ creatorId }: AnalyticsProps) {
         revenue: dates.map(date => dailyStats[date].revenue / 100), // Convert cents to dollars
         subscribers: dates.map(date => dailyStats[date].subscribers)
       });
-    } catch (error: any) {
-      console.error('Error fetching analytics:', error);
-      setError(error.message);
+    } catch (error: Error) {
+      setError(error.message || 'Failed to fetch analytics');
     } finally {
       setLoading(false);
     }
-  };
+  }, [timeframe, creatorId]);
 
   if (loading) {
     return (
