@@ -49,7 +49,7 @@ export const Feed = ({ subscribedContent, creatorId }: FeedProps) => {
           is_public,
           created_at,
           creator_id,
-          creator:profiles(id, name, avatar_url)
+          creator:profiles!creator_id(id, name, avatar_url)
         `)
         .range(from, to);
 

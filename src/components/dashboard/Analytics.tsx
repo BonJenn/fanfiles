@@ -133,7 +133,7 @@ export function Analytics({ creatorId }: AnalyticsProps) {
         ))}
       </div>
       <div className="bg-white p-6 rounded-lg shadow-sm">
-        {/* Render your chart component here */}
+        <pre>{JSON.stringify(data, null, 2)}</pre>
       </div>
     </div>
   );
