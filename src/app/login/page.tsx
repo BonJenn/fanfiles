@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
+import { supabase } from '../../lib/supabase';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -24,8 +24,12 @@ export default function Login() {
       
       if (error) throw error;
       
-      if (data.session) {
-        router.push('/dashboard');
+      if (data?.session) {
+        // Wait for session to be set
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        window.location.href = '/dashboard';
+      } else {
+        throw new Error('No session after login');
       }
     } catch (error: any) {
       console.error('Error logging in:', error);

@@ -5,21 +5,25 @@ import type { NextRequest } from 'next/server';
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
   const supabase = createMiddlewareClient({ req, res });
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session }, error } = await supabase.auth.getSession();
 
-  console.log('Middleware - Path:', req.nextUrl.pathname);
-  console.log('Middleware - Session:', !!session);
+  console.log('=== Middleware Debug ===');
+  console.log('Path:', req.nextUrl.pathname);
+  console.log('Session exists:', !!session);
+  console.log('User email:', session?.user?.email);
+  console.log('Error:', error);
+  console.log('========================');
 
-  // Redirect if not authenticated
+  // For dashboard access
   if (!session && req.nextUrl.pathname.startsWith('/dashboard')) {
-    console.log('Redirecting to login - no session');
-    return NextResponse.redirect(new URL('/login', req.url));
+    const redirectUrl = new URL('/login', req.url);
+    return NextResponse.redirect(redirectUrl);
   }
 
-  // Redirect if already authenticated
+  // For login/signup access when already authenticated
   if (session && (req.nextUrl.pathname === '/login' || req.nextUrl.pathname === '/signup')) {
-    console.log('Redirecting to dashboard - has session');
-    return NextResponse.redirect(new URL('/dashboard', req.url));
+    const redirectUrl = new URL('/dashboard', req.url);
+    return NextResponse.redirect(redirectUrl);
   }
 
   return res;
