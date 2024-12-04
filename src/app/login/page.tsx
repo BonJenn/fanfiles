@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '@/lib/supabase';
+import type { ApiError } from '@/types/error';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -24,11 +25,9 @@ export default function Login() {
       
       if (data?.session) {
         window.location.href = '/dashboard';
-      } else {
-        throw new Error('No session after login');
       }
-    } catch (error: Error) {
-      console.error('Error logging in:', error);
+    } catch (err) {
+      const error = err as ApiError;
       setError(error.message || 'Failed to login');
     } finally {
       setLoading(false);

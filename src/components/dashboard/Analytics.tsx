@@ -2,28 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Line } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-} from 'chart.js';
-
-// Register ChartJS components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-);
+import type { ApiError } from '@/types/error';
 
 interface AnalyticsProps {
   creatorId: string;
@@ -39,10 +18,6 @@ export function Analytics({ creatorId }: AnalyticsProps) {
     revenue: number[];
     subscribers: number[];
   }>({ dates: [], views: [], revenue: [], subscribers: [] });
-
-  useEffect(() => {
-    fetchAnalytics();
-  }, [timeframe, creatorId, fetchAnalytics]);
 
   const fetchAnalytics = useCallback(async () => {
     try {
@@ -107,12 +82,17 @@ export function Analytics({ creatorId }: AnalyticsProps) {
         revenue: dates.map(date => dailyStats[date].revenue / 100), // Convert cents to dollars
         subscribers: dates.map(date => dailyStats[date].subscribers)
       });
-    } catch (error: Error) {
-      setError(error.message || 'Failed to fetch analytics');
+    } catch (err) {
+      const error = err as ApiError;
+      setError(error.message || 'Failed to load analytics');
     } finally {
       setLoading(false);
     }
   }, [timeframe, creatorId]);
+
+  useEffect(() => {
+    fetchAnalytics();
+  }, [fetchAnalytics]);
 
   if (loading) {
     return (
@@ -172,17 +152,7 @@ export function Analytics({ creatorId }: AnalyticsProps) {
         ))}
       </div>
       <div className="bg-white p-6 rounded-lg shadow-sm">
-        <Line
-          data={chartData}
-          options={{
-            responsive: true,
-            plugins: {
-              legend: { position: 'top' },
-              title: { display: true, text: 'Performance Overview' }
-            },
-            scales: { y: { beginAtZero: true } }
-          }}
-        />
+        {/* Render your chart component here */}
       </div>
     </div>
   );

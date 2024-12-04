@@ -2,6 +2,12 @@
 
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import type { ApiError } from '@/types/error';
+
+interface SignupStatus {
+  needsEmailConfirmation?: boolean;
+  error?: string;
+}
 
 export default function Signup() {
   const [formData, setFormData] = useState({
@@ -11,10 +17,7 @@ export default function Signup() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [signupStatus, setSignupStatus] = useState<{
-    needsEmailConfirmation?: boolean;
-    error?: Error;
-  } | null>(null);
+  const [signupStatus, setSignupStatus] = useState<SignupStatus | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -43,7 +46,8 @@ export default function Signup() {
       if (error) throw error;
       
       setSignupStatus({ needsEmailConfirmation: true });
-    } catch (error: Error) {
+    } catch (err) {
+      const error = err as ApiError;
       setError(error.message || 'Failed to sign up');
     } finally {
       setLoading(false);

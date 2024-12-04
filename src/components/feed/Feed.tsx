@@ -1,9 +1,12 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+'use client';
+
+import { useState, useEffect, useCallback } from 'react';
 import { Post } from '@/types/post';
 import { PostCard } from './PostCard';
 import { supabase } from '@/lib/supabase';
 import { useInView } from 'react-intersection-observer';
 import debounce from 'lodash/debounce';
+import type { ApiError } from '@/types/error';
 
 interface FeedProps {
   subscribedContent: boolean;
@@ -24,33 +27,12 @@ export const Feed = ({ subscribedContent, creatorId }: FeedProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const postsPerPage = 9;
 
-  // Infinite scroll setup
   const { ref: loadMoreRef, inView } = useInView({
     threshold: 0.5,
     delay: 100
   });
 
-  // Debounced search
-  const debouncedSearch = useCallback((query: string) => {
-    setSearchQuery(query);
-    setPage(1);
-    setPosts([]);
-  }, [setSearchQuery, setPage, setPosts]);
-
-  useEffect(() => {
-    if (inView && hasMore && !loading) {
-      setPage(p => p + 1);
-    }
-  }, [inView, hasMore, loading, setPage]);
-
-  useEffect(() => {
-    setPage(1);
-    setPosts([]);
-    setError(null);
-    fetchPosts();
-  }, [subscribedContent, creatorId, sortBy, contentType, searchQuery, fetchPosts]);
-
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -112,13 +94,23 @@ export const Feed = ({ subscribedContent, creatorId }: FeedProps) => {
 
       setPosts(prev => page === 1 ? data : [...prev, ...data]);
       setHasMore(data.length === postsPerPage);
-    } catch (error: any) {
+    } catch (err) {
+      const error = err as ApiError;
       setError(error.message || 'Failed to load posts');
-      console.error('Error fetching posts:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [subscribedContent, creatorId, sortBy, contentType, searchQuery, page, postsPerPage]);
+
+  useEffect(() => {
+    if (inView && hasMore && !loading) {
+      setPage(prev => prev + 1);
+    }
+  }, [inView, hasMore, loading]);
+
+  useEffect(() => {
+    fetchPosts();
+  }, [fetchPosts]);
 
   return (
     <div className="space-y-6">
