@@ -9,7 +9,12 @@ interface AnalyticsProps {
 }
 
 export function Analytics({ creatorId }: AnalyticsProps) {
-  const [data, setData] = useState({
+  const [data, setData] = useState<{
+    dates: string[];
+    views: number[];
+    revenue: number[];
+    subscribers: number[];
+  }>({
     dates: [],
     views: [],
     revenue: [],
