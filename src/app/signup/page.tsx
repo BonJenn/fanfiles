@@ -34,22 +34,12 @@ export default function Signup() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    setDebug('Starting signup process...');
+    console.log('Starting signup...');
 
     try {
-      // Check if user already exists first
-      const { data: existingUser } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', formData.email)
-        .single();
-
-      if (existingUser) {
-        throw new Error('An account with this email already exists. Please log in instead.');
+      if (formData.password !== formData.confirmPassword) {
+        throw new Error('Passwords do not match');
       }
-
-      // Add delay to prevent rapid requests
-      await new Promise(resolve => setTimeout(resolve, 1000));
 
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
@@ -60,63 +50,22 @@ export default function Signup() {
         }
       });
 
+      console.log('Auth response:', authData);
+
       if (authError) {
-        setDebug('Auth Error Details: ' + JSON.stringify(authError, null, 2));
-        
-        if (authError.status === 429) {
-          // Store attempt timestamp in localStorage
-          const timestamp = Date.now();
-          localStorage.setItem('lastSignupAttempt', timestamp.toString());
-          throw new Error('Please wait 60 seconds before trying again.');
-        }
+        console.error('Auth error:', authError);
         throw authError;
       }
 
-      // Set signup status for email confirmation message
       setSignupStatus({
         user: authData.user,
         session: authData.session,
-        needsEmailConfirmation: !authData.session
+        needsEmailConfirmation: true
       });
 
-      if (!authData.session) {
-        setDebug('Signup successful! Please check your email to confirm your account.');
-        return;
-      }
-
-      if (authData.user) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: authData.user.id,
-            name: formData.name,
-            email: formData.email,
-            avatar_url: null,
-            bio: null,
-            updated_at: new Date().toISOString()
-          })
-          .select()
-          .single();
-
-        if (profileError) throw profileError;
-        
-        setDebug('Profile created successfully');
-        router.push('/dashboard');
-      }
     } catch (error: any) {
-      console.error('Detailed signup error:', error);
-      setError(
-        error.message || 
-        'An unexpected error occurred. Please try again later.'
-      );
-      setDebug('Full error details: ' + JSON.stringify({
-        message: error.message,
-        name: error.name,
-        code: error?.code,
-        status: error?.status,
-        details: error?.details,
-        stack: error.stack
-      }, null, 2));
+      console.error('Signup error:', error);
+      setError(error.message);
     } finally {
       setLoading(false);
     }

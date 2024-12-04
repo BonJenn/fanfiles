@@ -4,6 +4,9 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Feed } from '@/components/feed/Feed';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { CreatePostForm } from '@/components/posts/CreatePostForm';
+import { Modal } from '@/components/ui/Modal';
 
 interface Profile {
   id: string;
@@ -30,6 +33,8 @@ export default function Dashboard() {
   });
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'posts' | 'subscribers' | 'analytics'>('posts');
+  const [showCreatePost, setShowCreatePost] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchProfileAndStats = async () => {
@@ -95,6 +100,11 @@ export default function Dashboard() {
     </div>
   );
 
+  const handlePostCreated = () => {
+    setShowCreatePost(false);
+    fetchProfileAndStats(); // Refresh stats
+  };
+
   if (loading) return <div>Loading...</div>;
   if (!profile) return <div>Please log in</div>;
 
@@ -118,7 +128,10 @@ export default function Dashboard() {
                 <p className="text-gray-600">{profile.email}</p>
                 <p className="mt-2">{profile.bio || 'No bio yet'}</p>
               </div>
-              <button className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800">
+              <button
+                onClick={() => router.push('/settings')}
+                className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800"
+              >
                 Edit Profile
               </button>
             </div>
@@ -151,7 +164,7 @@ export default function Dashboard() {
       </div>
 
       {/* Tabs */}
-      <div className="border-b mb-8">
+      <div className="flex justify-between items-center border-b mb-8">
         <div className="flex space-x-8">
           <button
             onClick={() => setActiveTab('posts')}
@@ -184,6 +197,12 @@ export default function Dashboard() {
             Analytics
           </button>
         </div>
+        <button
+          onClick={() => setShowCreatePost(true)}
+          className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800"
+        >
+          Create Post
+        </button>
       </div>
 
       {/* Content */}
@@ -200,6 +219,15 @@ export default function Dashboard() {
           <p>Analytics feature coming soon</p>
         </div>
       )}
+
+      {/* Create Post Modal */}
+      <Modal
+        isOpen={showCreatePost}
+        onClose={() => setShowCreatePost(false)}
+        title="Create New Post"
+      >
+        <CreatePostForm onSuccess={handlePostCreated} />
+      </Modal>
     </div>
   );
 }

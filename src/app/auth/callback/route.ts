@@ -10,7 +10,12 @@ export async function GET(request: NextRequest) {
   if (code) {
     const cookieStore = cookies();
     const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
-    await supabase.auth.exchangeCodeForSession(code);
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    
+    if (error) {
+      console.error('Auth error:', error);
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
   }
 
   return NextResponse.redirect(new URL('/dashboard', request.url));

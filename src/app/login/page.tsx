@@ -8,22 +8,28 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
     
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       
       if (error) throw error;
-      router.push('/dashboard');
-    } catch (error) {
+      
+      if (data.session) {
+        router.push('/dashboard');
+      }
+    } catch (error: any) {
       console.error('Error logging in:', error);
+      setError(error.message || 'Failed to login. Please check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -32,6 +38,13 @@ export default function Login() {
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
       <h1 className="text-2xl font-bold mb-6">Login to FanFiles</h1>
+      
+      {error && (
+        <div className="mb-4 p-3 bg-red-50 text-red-500 rounded-md">
+          {error}
+        </div>
+      )}
+
       <form onSubmit={handleLogin} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700">Email</label>
