@@ -14,8 +14,8 @@ export async function middleware(req: NextRequest) {
   console.log('Error:', error);
   console.log('========================');
 
-  // For dashboard access
-  if (!session && req.nextUrl.pathname.startsWith('/dashboard')) {
+  // For protected routes and root path
+  if (!session && (req.nextUrl.pathname === '/' || req.nextUrl.pathname.startsWith('/dashboard'))) {
     const redirectUrl = new URL('/login', req.url);
     return NextResponse.redirect(redirectUrl);
   }
@@ -30,5 +30,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/settings', '/login', '/signup'],
+  matcher: ['/', '/dashboard/:path*', '/settings', '/login', '/signup'],
 };
