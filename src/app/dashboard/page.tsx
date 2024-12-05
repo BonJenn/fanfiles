@@ -13,6 +13,7 @@ import {
   Tooltip,
   Legend
 } from 'chart.js';
+import { EarningsChart } from '@/components/dashboard/EarningsChart';
 
 ChartJS.register(
   CategoryScale,
@@ -39,6 +40,7 @@ export default function Dashboard() {
     recentViews: 0
   });
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
     fetchDashboardStats();
@@ -48,6 +50,8 @@ export default function Dashboard() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user found');
+      
+      setUser(user);
 
       // Fetch total earnings
       const { data: earnings } = await supabase
@@ -82,6 +86,7 @@ export default function Dashboard() {
   };
 
   if (loading) return <div>Loading...</div>;
+  if (!user) return <div>Please log in</div>;
 
   return (
     <div className="space-y-8">
@@ -109,6 +114,31 @@ export default function Dashboard() {
           value={stats.recentViews.toString()}
           description="Views this month"
         />
+      </div>
+
+      {/* Earnings Chart */}
+      <div className="mt-8">
+        <EarningsChart userId={user.id} />
+      </div>
+
+      {/* Recent Transactions */}
+      <div className="mt-8">
+        <h2 className="text-xl font-semibold mb-4">Recent Transactions</h2>
+        <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Content</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Buyer</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {/* Add transaction rows here */}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
