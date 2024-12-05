@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { ApiError } from '@/types/error';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -98,9 +99,9 @@ export default function Login() {
 
           <div className="mt-6 text-center text-sm text-gray-600">
             Don't have an account?{' '}
-            <a href="/signup" className="text-black hover:underline font-medium">
+            <Link href="/signup" className="text-black hover:underline font-medium">
               Sign up here
-            </a>
+            </Link>
           </div>
         </div>
       </div>

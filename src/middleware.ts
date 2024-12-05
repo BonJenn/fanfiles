@@ -6,16 +6,9 @@ export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
   const supabase = createMiddlewareClient({ req, res });
   
-  await supabase.auth.getSession();
+  const { data: { session } } = await supabase.auth.getSession();
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (!session && req.nextUrl.pathname === '/') {
-    return NextResponse.redirect(new URL('/login', req.url));
-  }
-
+  // Protect dashboard and settings routes
   if (!session && (
     req.nextUrl.pathname.startsWith('/dashboard') || 
     req.nextUrl.pathname === '/settings'
@@ -23,7 +16,11 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL('/login', req.url));
   }
 
-  if (session && (req.nextUrl.pathname === '/login' || req.nextUrl.pathname === '/signup')) {
+  // Redirect logged in users away from auth pages
+  if (session && (
+    req.nextUrl.pathname === '/login' || 
+    req.nextUrl.pathname === '/signup'
+  )) {
     return NextResponse.redirect(new URL('/dashboard', req.url));
   }
 
