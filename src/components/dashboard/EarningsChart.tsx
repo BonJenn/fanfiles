@@ -1,7 +1,29 @@
 import { Line } from 'react-chartjs-2';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import type { ChartData, ChartOptions } from 'chart.js';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  ChartData,
+  ChartOptions
+} from 'chart.js';
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 interface ChartDataType {
   labels: string[];
