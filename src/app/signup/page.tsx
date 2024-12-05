@@ -31,9 +31,10 @@ export default function Signup() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    
+    setSignupStatus(null);
+
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
@@ -44,6 +45,22 @@ export default function Signup() {
       });
       
       if (error) throw error;
+      
+      if (data.user) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert([
+            {
+              id: data.user.id,
+              email: data.user.email,
+              name: formData.name,
+              avatar_url: null,
+              bio: null
+            }
+          ]);
+        
+        if (profileError) throw profileError;
+      }
       
       setSignupStatus({ needsEmailConfirmation: true });
     } catch (err) {

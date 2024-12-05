@@ -5,30 +5,28 @@ import type { NextRequest } from 'next/server';
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
   const supabase = createMiddlewareClient({ req, res });
-  const { data: { session }, error } = await supabase.auth.getSession();
+  
+  await supabase.auth.getSession();
 
-  console.log('=== Middleware Debug ===');
-  console.log('Path:', req.nextUrl.pathname);
-  console.log('Session exists:', !!session);
-  console.log('User email:', session?.user?.email);
-  console.log('Error:', error);
-  console.log('========================');
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
 
-  // For protected routes and root path
-  if (!session && (req.nextUrl.pathname === '/' || req.nextUrl.pathname.startsWith('/dashboard'))) {
-    const redirectUrl = new URL('/login', req.url);
-    return NextResponse.redirect(redirectUrl);
+  if (!session && (
+    req.nextUrl.pathname.startsWith('/dashboard') || 
+    req.nextUrl.pathname === '/settings'
+  )) {
+    return NextResponse.redirect(new URL('/login', req.url));
   }
 
-  // For login/signup access when already authenticated
   if (session && (req.nextUrl.pathname === '/login' || req.nextUrl.pathname === '/signup')) {
-    const redirectUrl = new URL('/dashboard', req.url);
-    return NextResponse.redirect(redirectUrl);
+    return NextResponse.redirect(new URL('/dashboard', req.url));
   }
 
   return res;
 }
 
+// Only run middleware on auth-related routes
 export const config = {
-  matcher: ['/', '/dashboard/:path*', '/settings', '/login', '/signup'],
+  matcher: ['/dashboard/:path*', '/settings', '/login', '/signup']
 };

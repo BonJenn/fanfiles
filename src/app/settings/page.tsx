@@ -102,6 +102,18 @@ export default function Settings() {
     }
   };
 
+  const handleSignOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      router.push('/');
+      router.refresh();
+    } catch (error: any) {
+      console.error('Error signing out:', error);
+      setError(error.message);
+    }
+  };
+
   if (loading) return <div>Loading...</div>;
   if (!profile) return <div>Please log in</div>;
 
@@ -199,6 +211,17 @@ export default function Settings() {
             </button>
           </div>
         </form>
+
+        <div className="mt-8 pt-8 border-t">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Account Actions</h2>
+          <button
+            onClick={handleSignOut}
+            type="button"
+            className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+          >
+            Sign Out
+          </button>
+        </div>
       </div>
     </div>
   );
