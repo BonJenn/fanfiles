@@ -1,8 +1,9 @@
 import { Line } from 'react-chartjs-2';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import type { ChartData, ChartOptions } from 'chart.js';
 
-interface ChartData {
+interface ChartDataType {
   labels: string[];
   datasets: {
     label: string;
@@ -13,7 +14,7 @@ interface ChartData {
 }
 
 export function EarningsChart({ userId }: { userId: string }) {
-  const [chartData, setChartData] = useState<ChartData>({
+  const [chartData, setChartData] = useState<ChartData<'line'>>({
     labels: [],
     datasets: [{
       label: 'Earnings',
@@ -56,7 +57,7 @@ export function EarningsChart({ userId }: { userId: string }) {
     fetchEarningsData();
   }, [userId]);
 
-  const options = {
+  const options: ChartOptions<'line'> = {
     responsive: true,
     plugins: {
       legend: {
@@ -64,15 +65,20 @@ export function EarningsChart({ userId }: { userId: string }) {
       },
       tooltip: {
         callbacks: {
-          label: (context: any) => `$${context.raw.toFixed(2)}`
+          label: function(context) {
+            return `$${context.raw as number}`;
+          }
         }
       }
     },
     scales: {
       y: {
+        type: 'linear',
         beginAtZero: true,
         ticks: {
-          callback: (value: number) => `$${value}`
+          callback: function(value) {
+            return `$${value}`;
+          }
         }
       }
     }
