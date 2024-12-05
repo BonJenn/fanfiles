@@ -110,12 +110,6 @@ export const UserMenu = () => {
         </>
       ) : (
         <>
-          <button
-            onClick={handleSignOut}
-            className="text-sm text-red-600 hover:text-red-800"
-          >
-            Force Sign Out
-          </button>
           <Link href="/login" className="text-sm">
             Login
           </Link>
