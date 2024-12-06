@@ -1,126 +1,67 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
-import Image from 'next/image';
+import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-
-interface Profile {
-  id: string;
-  name: string;
-  email: string;
-  avatar_url: string | null;
-  bio: string | null;
-}
+import { Spinner } from '@/components/common/Spinner';
 
 export const UserMenu = () => {
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
+  const { user, profile, loading, signOut } = useAuth();
 
-  const handleSignOut = async () => {
-    try {
-      await supabase.auth.signOut();
-      setProfile(null);
-      router.push('/login');
-      router.refresh();
-      window.location.reload();
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
-  };
+  if (loading) {
+    return <Spinner className="w-8 h-8" />;
+  }
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        setLoading(true);
-        const { data: { user } } = await supabase.auth.getUser();
-        console.log('Current user:', user);
-        
-        if (!user) {
-          setProfile(null);
-          return;
-        }
-
-        const { data: profile, error } = await supabase
-          .from('profiles')
-          .select('id, name, email, avatar_url, bio')
-          .eq('id', user.id)
-          .single();
-        
-        console.log('Profile data:', profile);
-        console.log('Profile error:', error);
-        
-        if (error) {
-          console.error('Profile fetch error:', error);
-          setProfile(null);
-          return;
-        }
-        
-        setProfile(profile);
-      } catch (error) {
-        console.error('Error fetching profile:', error);
-        setProfile(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProfile();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        fetchProfile();
-      } else {
-        setProfile(null);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  if (loading) return null;
+  if (!user || !profile) {
+    return (
+      <div className="space-x-4">
+        <Link href="/login" className="text-gray-700 hover:text-black">
+          Login
+        </Link>
+        <Link
+          href="/signup"
+          className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800"
+        >
+          Sign Up
+        </Link>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex items-center gap-4">
-      {profile ? (
-        <>
-          <Link href="/dashboard" className="text-sm">
-            {profile.name || 'Dashboard'}
-          </Link>
-          <Link href="/settings" className="text-sm">
-            <div className="relative w-8 h-8">
-              <Image
-                src={profile.avatar_url || '/default-avatar.png'}
-                alt="Profile"
-                fill
-                className="rounded-full object-cover"
-              />
-            </div>
-          </Link>
-          <button
-            onClick={handleSignOut}
-            className="text-sm text-red-600 hover:text-red-800"
-          >
-            Sign Out
-          </button>
-        </>
-      ) : (
-        <>
-          <Link href="/login" className="text-sm">
-            Login
-          </Link>
-          <Link 
-            href="/signup"
-            className="bg-black text-white px-4 py-2 rounded-md text-sm"
-          >
-            Sign Up
-          </Link>
-        </>
-      )}
+    <div className="relative group">
+      <button className="flex items-center space-x-2">
+        <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden">
+          {profile.avatar_url && (
+            <img
+              src={profile.avatar_url}
+              alt={profile.name}
+              className="w-full h-full object-cover"
+            />
+          )}
+        </div>
+        <span className="text-gray-700">{profile.name}</span>
+      </button>
+
+      <div className="absolute right-0 -mt-1 w-48 bg-white rounded-md shadow-lg py-1 invisible group-hover:visible">
+        <Link
+          href="/dashboard"
+          className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+        >
+          Dashboard
+        </Link>
+        <Link
+          href="/settings"
+          className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+        >
+          Settings
+        </Link>
+        <button
+          onClick={signOut}
+          className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+        >
+          Sign Out
+        </button>
+      </div>
     </div>
   );
 };

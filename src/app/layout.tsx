@@ -1,13 +1,6 @@
-import { Inter } from 'next/font/google';
-import './globals.css';
+import { AuthProvider } from '@/contexts/AuthContext';
 import { Header } from '@/components/header/Header';
-
-const inter = Inter({ subsets: ['latin'] });
-
-export const metadata = {
-  title: 'FanFiles',
-  description: 'Share and monetize your content',
-};
+import './globals.css';
 
 export default function RootLayout({
   children,
@@ -16,11 +9,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
-        <Header />
-        <main className="container mx-auto py-8">
-          {children}
-        </main>
+      <body className="min-h-screen bg-white">
+        <AuthProvider>
+          <Header />
+          <main>{children}</main>
+        </AuthProvider>
       </body>
     </html>
   );

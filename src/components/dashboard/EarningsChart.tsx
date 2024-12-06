@@ -41,48 +41,40 @@ export function EarningsChart({ userId }: { userId: string }) {
   useEffect(() => {
     const fetchEarningsData = async () => {
       setLoading(true);
-      const days = timeframe === '7d' ? 7 : timeframe === '30d' ? 30 : 90;
-      const startDate = new Date();
-      startDate.setDate(startDate.getDate() - days);
+      try {
+        const days = timeframe === '7d' ? 7 : timeframe === '30d' ? 30 : 90;
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - days);
 
-      const { data: transactions } = await supabase
-        .from('transactions')
-        .select('amount, created_at')
-        .eq('creator_id', userId)
-        .gte('created_at', startDate.toISOString())
-        .order('created_at');
+        // Use a single query with aggregation
+        const { data: dailyEarnings } = await supabase
+          .from('transactions')
+          .select('date:created_at::date, daily_total:amount::sum')
+          .eq('creator_id', userId)
+          .gte('created_at', startDate.toISOString())
+          .group('created_at::date')
+          .order('created_at::date');
 
-      // Generate all dates in range
-      const dates = Array.from({ length: days }, (_, i) => {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
-        return date.toISOString().split('T')[0];
-      }).reverse();
+        // Process data more efficiently
+        const processedData = dailyEarnings?.reduce((acc, { date, daily_total }) => {
+          acc[date] = (daily_total || 0) / 100;
+          return acc;
+        }, {} as Record<string, number>) || {};
 
-      // Initialize earnings for all dates
-      const dailyEarnings = dates.reduce((acc, date) => {
-        acc[date] = 0;
-        return acc;
-      }, {} as Record<string, number>);
-
-      // Fill in actual earnings
-      transactions?.forEach(transaction => {
-        const date = new Date(transaction.created_at).toISOString().split('T')[0];
-        if (dailyEarnings[date] !== undefined) {
-          dailyEarnings[date] += transaction.amount;
-        }
-      });
-
-      setChartData({
-        labels: Object.keys(dailyEarnings),
-        datasets: [{
-          label: 'Daily Earnings',
-          data: Object.values(dailyEarnings).map(amount => amount / 100),
-          borderColor: '#000',
-          tension: 0.1
-        }]
-      });
-      setLoading(false);
+        setChartData({
+          labels: Object.keys(processedData),
+          datasets: [{
+            label: 'Daily Earnings',
+            data: Object.values(processedData),
+            borderColor: '#000',
+            tension: 0.1
+          }]
+        });
+      } catch (error) {
+        console.error('Error fetching earnings data:', error);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchEarningsData();

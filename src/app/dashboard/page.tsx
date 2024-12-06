@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { EarningsChart } from '@/components/dashboard/EarningsChart';
 import { TransactionsTable } from '@/components/dashboard/TransactionsTable';
 import { ContentManagement } from '@/components/dashboard/ContentManagement';
+import { useAuth } from '@/contexts/AuthContext';
+import { useRouter } from 'next/navigation';
 
 interface DashboardStats {
   totalEarnings: number;
@@ -14,6 +16,8 @@ interface DashboardStats {
 }
 
 export default function Dashboard() {
+  const { user, profile, loading: authLoading } = useAuth();
+  const router = useRouter();
   const [stats, setStats] = useState<DashboardStats>({
     totalEarnings: 0,
     totalSubscribers: 0,
@@ -21,119 +25,132 @@ export default function Dashboard() {
     recentViews: 0
   });
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchDashboardStats();
-  }, []);
-
-  const fetchDashboardStats = async () => {
+  const fetchDashboardStats = useCallback(async () => {
+    if (!user) return;
+    
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('No user found');
-      
-      setUser(user);
-
-      // Get the start of the current month
+      setError(null);
       const startOfMonth = new Date();
       startOfMonth.setDate(1);
       startOfMonth.setHours(0, 0, 0, 0);
 
-      const [
-        { count: totalPosts },
-        { count: totalSubscribers },
-        { data: earnings },
-        { count: monthlyViews }
-      ] = await Promise.all([
-        // Get total posts
-        supabase
-          .from('posts')
-          .select('*', { count: 'exact', head: true })
-          .eq('creator_id', user.id),
-        
-        // Get total subscribers
-        supabase
-          .from('subscriptions')
-          .select('*', { count: 'exact', head: true })
-          .eq('creator_id', user.id),
-        
-        // Get total earnings
-        supabase
-          .from('transactions')
-          .select('amount')
-          .eq('creator_id', user.id),
-        
-        // Get views this month
-        supabase
-          .from('post_views')
-          .select('*', { count: 'exact', head: true })
-          .eq('creator_id', user.id)
-          .gte('created_at', startOfMonth.toISOString())
-      ]);
+      const { data: stats } = await supabase
+        .rpc('get_creator_stats', { 
+          creator_id: user.id,
+          start_date: startOfMonth.toISOString()
+        });
 
-      const totalEarnings = earnings?.reduce((sum, transaction) => 
-        sum + (transaction.amount || 0), 0) || 0;
-
-      setStats({
-        totalPosts: totalPosts || 0,
-        totalSubscribers: totalSubscribers || 0,
-        totalEarnings,
-        recentViews: monthlyViews || 0
-      });
+      if (stats) {
+        setStats({
+          totalPosts: stats.total_posts || 0,
+          totalSubscribers: stats.total_subscribers || 0,
+          totalEarnings: stats.total_earnings || 0,
+          recentViews: stats.monthly_views || 0
+        });
+      }
     } catch (error) {
       console.error('Error fetching dashboard stats:', error);
+      setError(error.message);
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
-  if (loading) return <div>Loading...</div>;
-  if (!user) return <div>Please log in</div>;
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+      return;
+    }
+    if (user) {
+      fetchDashboardStats();
+    }
+  }, [user, authLoading, router, fetchDashboardStats]);
 
-  return (
-    <div className="space-y-8">
-      <h1 className="text-3xl font-bold">Creator Dashboard</h1>
-      
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
-          title="Total Earnings"
-          value={`$${(stats.totalEarnings / 100).toFixed(2)}`}
-          description="Lifetime earnings"
-        />
-        <StatCard
-          title="Subscribers"
-          value={stats.totalSubscribers.toString()}
-          description="Active subscribers"
-        />
-        <StatCard
-          title="Content"
-          value={stats.totalPosts.toString()}
-          description="Total posts"
-        />
-        <StatCard
-          title="Recent Views"
-          value={stats.recentViews.toString()}
-          description="Views this month"
-        />
-      </div>
-
-      {/* Earnings Chart */}
-      <div className="mt-8">
-        <EarningsChart userId={user.id} />
-      </div>
-
-      {/* Recent Transactions */}
-      <div className="mt-8">
-        <h2 className="text-xl font-semibold mb-4">Recent Transactions</h2>
-        <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
-          <TransactionsTable userId={user.id} />
+  if (authLoading || loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="space-y-8 animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="bg-white p-6 rounded-lg shadow-sm border">
+                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                <div className="h-8 bg-gray-200 rounded w-3/4 mt-2"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/3 mt-1"></div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
+    );
+  }
 
-      {/* Content Management */}
-      <div className="mt-8">
-        <ContentManagement userId={user.id} />
+  if (!user || !profile) return null;
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="bg-red-50 text-red-500 p-4 rounded-md mb-8">
+          {error}
+        </div>
+        <button 
+          onClick={fetchDashboardStats}
+          className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="space-y-8">
+        <h1 className="text-3xl font-bold">Creator Dashboard</h1>
+        
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatCard
+            title="Total Earnings"
+            value={`$${(stats.totalEarnings / 100).toFixed(2)}`}
+            description="Lifetime earnings"
+          />
+          <StatCard
+            title="Subscribers"
+            value={stats.totalSubscribers.toString()}
+            description="Active subscribers"
+          />
+          <StatCard
+            title="Content"
+            value={stats.totalPosts.toString()}
+            description="Total posts"
+          />
+          <StatCard
+            title="Recent Views"
+            value={stats.recentViews.toString()}
+            description="Views this month"
+          />
+        </div>
+
+        {/* Earnings Chart */}
+        <div className="mt-8">
+          <EarningsChart userId={user.id} />
+        </div>
+
+        {/* Recent Transactions */}
+        <div className="mt-8">
+          <h2 className="text-xl font-semibold mb-4">Recent Transactions</h2>
+          <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+            <TransactionsTable userId={user.id} />
+          </div>
+        </div>
+
+        {/* Content Management */}
+        <div className="mt-8">
+          <ContentManagement userId={user.id} />
+        </div>
       </div>
     </div>
   );

@@ -2,22 +2,20 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function Home() {
+  const { user, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        router.push('/dashboard');
-      }
-    };
+    if (!loading && user) {
+      router.push('/dashboard');
+    }
+  }, [loading, user, router]);
 
-    checkAuth();
-  }, [router]);
+  if (loading || user) return null;
 
   return (
     <div className="min-h-screen flex">

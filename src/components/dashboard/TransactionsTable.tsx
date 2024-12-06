@@ -1,4 +1,7 @@
+'use client';
+
 import { useEffect, useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 
 interface Transaction {
@@ -22,11 +25,18 @@ interface TransactionsTableProps {
 }
 
 export function TransactionsTable({ userId }: TransactionsTableProps) {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   useEffect(() => {
+    if (!user || user.id !== userId) {
+      setError('Unauthorized');
+      setLoading(false);
+      return;
+    }
+
     const fetchTransactions = async () => {
       try {
         const { data, error } = await supabase
@@ -62,7 +72,15 @@ export function TransactionsTable({ userId }: TransactionsTableProps) {
     };
 
     fetchTransactions();
-  }, [userId]);
+  }, [user, userId]);
+
+  if (error === 'Unauthorized') {
+    return (
+      <div className="bg-red-50 text-red-500 p-4 rounded-md">
+        You don't have permission to view these transactions
+      </div>
+    );
+  }
 
   if (loading) {
     return (

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import type { ApiError } from '@/types/error';
 
@@ -9,6 +10,7 @@ interface AnalyticsProps {
 }
 
 export function Analytics({ creatorId }: AnalyticsProps) {
+  const { user } = useAuth();
   const [data, setData] = useState<{
     dates: string[];
     views: number[];
@@ -24,7 +26,21 @@ export function Analytics({ creatorId }: AnalyticsProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Verify auth before fetching
+  useEffect(() => {
+    if (!user || user.id !== creatorId) {
+      setError('Unauthorized');
+      setLoading(false);
+      return;
+    }
+  }, [user, creatorId]);
+
   const fetchAnalytics = useCallback(async () => {
+    if (!user || user.id !== creatorId) {
+      setError('Unauthorized');
+      return;
+    }
+    
     try {
       setLoading(true);
       setError(null);
@@ -93,11 +109,19 @@ export function Analytics({ creatorId }: AnalyticsProps) {
     } finally {
       setLoading(false);
     }
-  }, [timeframe, creatorId]);
+  }, [user, creatorId, timeframe]);
 
   useEffect(() => {
     fetchAnalytics();
   }, [fetchAnalytics]);
+
+  if (error === 'Unauthorized') {
+    return (
+      <div className="bg-red-50 text-red-500 p-4 rounded-md">
+        You don't have permission to view these analytics
+      </div>
+    );
+  }
 
   if (loading) {
     return (

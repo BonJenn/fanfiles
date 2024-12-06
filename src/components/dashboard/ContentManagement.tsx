@@ -1,4 +1,7 @@
+'use client';
+
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { Post } from '@/types/post';
 import { CreatePostForm } from '@/components/posts/CreatePostForm';
@@ -9,12 +12,18 @@ interface ContentManagementProps {
 }
 
 export function ContentManagement({ userId }: ContentManagementProps) {
+  const { user } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const fetchPosts = async () => {
+    if (!user || user.id !== userId) {
+      setError('Unauthorized');
+      return;
+    }
+
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -33,6 +42,11 @@ export function ContentManagement({ userId }: ContentManagementProps) {
   };
 
   const handleDelete = async (postId: string) => {
+    if (!user || user.id !== userId) {
+      setError('Unauthorized');
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('posts')
@@ -47,8 +61,21 @@ export function ContentManagement({ userId }: ContentManagementProps) {
   };
 
   useEffect(() => {
+    if (!user || user.id !== userId) {
+      setError('Unauthorized');
+      setLoading(false);
+      return;
+    }
     fetchPosts();
-  }, [userId]);
+  }, [user, userId]);
+
+  if (error === 'Unauthorized') {
+    return (
+      <div className="bg-red-50 text-red-500 p-4 rounded-md">
+        You don't have permission to manage this content
+      </div>
+    );
+  }
 
   if (loading) {
     return (
