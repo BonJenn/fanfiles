@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { EarningsChart } from '@/components/dashboard/EarningsChart';
 import { TransactionsTable } from '@/components/dashboard/TransactionsTable';
+import { ContentManagement } from '@/components/dashboard/ContentManagement';
 
 interface DashboardStats {
   totalEarnings: number;
@@ -107,6 +108,11 @@ export default function Dashboard() {
         <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
           <TransactionsTable userId={user.id} />
         </div>
+      </div>
+
+      {/* Content Management */}
+      <div className="mt-8">
+        <ContentManagement userId={user.id} />
       </div>
     </div>
   );
