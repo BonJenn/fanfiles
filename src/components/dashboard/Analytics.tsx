@@ -61,27 +61,32 @@ export function Analytics({ creatorId }: AnalyticsProps) {
         supabase
           .from('post_views')
           .select(`
-            created_at,
-            post_views.creator_id
+            id,
+            post_id,
+            viewer_id,
+            creator_id,
+            created_at
           `)
-          .eq('post_views.creator_id', creatorId)
+          .eq('creator_id', creatorId)
           .gte('created_at', startDate.toISOString()),
         supabase
           .from('transactions')
           .select(`
+            id,
             amount,
             created_at,
-            transactions.creator_id
+            creator_id
           `)
-          .eq('transactions.creator_id', creatorId)
+          .eq('creator_id', creatorId)
           .gte('created_at', startDate.toISOString()),
         supabase
           .from('subscriptions')
           .select(`
+            id,
             created_at,
-            subscriptions.creator_id
+            creator_id
           `)
-          .eq('subscriptions.creator_id', creatorId)
+          .eq('creator_id', creatorId)
           .gte('created_at', startDate.toISOString())
       ]);
 
