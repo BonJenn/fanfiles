@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import Image from 'next/image';
@@ -88,6 +88,30 @@ export const PostCard = ({ post }: PostCardProps) => {
       setIsPlaying(!isPlaying);
     }
   };
+
+  const recordView = useCallback(async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      await fetch('/api/views', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          postId: post.id,
+          viewerId: user.id,
+        }),
+      });
+    } catch (error) {
+      console.error('Error recording view:', error);
+    }
+  }, [post.id]);
+
+  useEffect(() => {
+    recordView();
+  }, [recordView]);
 
   return (
     <div className="bg-white border rounded-lg overflow-hidden shadow-md transition-transform hover:shadow-lg hover:-translate-y-1">

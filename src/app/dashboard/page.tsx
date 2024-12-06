@@ -34,30 +34,51 @@ export default function Dashboard() {
       
       setUser(user);
 
-      // Fetch total earnings
-      const { data: earnings } = await supabase
-        .from('transactions')
-        .select('amount')
-        .eq('creator_id', user.id);
+      // Get the start of the current month
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
 
-      // Fetch subscriber count
-      const { count: subscriberCount } = await supabase
-        .from('subscriptions')
-        .select('*', { count: 'exact' })
-        .eq('creator_id', user.id)
-        .eq('status', 'active');
+      const [
+        { count: totalPosts },
+        { count: totalSubscribers },
+        { data: earnings },
+        { count: monthlyViews }
+      ] = await Promise.all([
+        // Get total posts
+        supabase
+          .from('posts')
+          .select('*', { count: 'exact', head: true })
+          .eq('creator_id', user.id),
+        
+        // Get total subscribers
+        supabase
+          .from('subscriptions')
+          .select('*', { count: 'exact', head: true })
+          .eq('creator_id', user.id),
+        
+        // Get total earnings
+        supabase
+          .from('transactions')
+          .select('amount')
+          .eq('creator_id', user.id),
+        
+        // Get views this month
+        supabase
+          .from('post_views')
+          .select('*', { count: 'exact', head: true })
+          .eq('creator_id', user.id)
+          .gte('created_at', startOfMonth.toISOString())
+      ]);
 
-      // Fetch post count
-      const { count: postCount } = await supabase
-        .from('posts')
-        .select('*', { count: 'exact' })
-        .eq('creator_id', user.id);
+      const totalEarnings = earnings?.reduce((sum, transaction) => 
+        sum + (transaction.amount || 0), 0) || 0;
 
       setStats({
-        totalEarnings: earnings?.reduce((sum, t) => sum + t.amount, 0) || 0,
-        totalSubscribers: subscriberCount || 0,
-        totalPosts: postCount || 0,
-        recentViews: 0 // To be implemented
+        totalPosts: totalPosts || 0,
+        totalSubscribers: totalSubscribers || 0,
+        totalEarnings,
+        recentViews: monthlyViews || 0
       });
     } catch (error) {
       console.error('Error fetching dashboard stats:', error);
