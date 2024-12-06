@@ -5,6 +5,8 @@ interface Transaction {
   id: string;
   created_at: string;
   amount: number;
+  post_id: string;
+  buyer_id: string;
   post: {
     id: string;
     description: string;
@@ -33,11 +35,13 @@ export function TransactionsTable({ userId }: TransactionsTableProps) {
             id,
             created_at,
             amount,
-            post:post_id!inner (
+            post_id,
+            buyer_id,
+            post:posts!post_id (
               id,
               description
             ),
-            buyer:buyer_id!inner (
+            buyer:profiles!buyer_id (
               id,
               name
             )
@@ -47,7 +51,8 @@ export function TransactionsTable({ userId }: TransactionsTableProps) {
           .limit(10);
 
         if (error) throw error;
-        setTransactions(data as Transaction[]);
+        
+        setTransactions((data as unknown) as Transaction[]);
       } catch (err: any) {
         setError(err.message);
         console.error('Error fetching transactions:', err);
