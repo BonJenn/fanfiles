@@ -25,16 +25,6 @@ ChartJS.register(
   Legend
 );
 
-interface ChartDataType {
-  labels: string[];
-  datasets: {
-    label: string;
-    data: number[];
-    borderColor: string;
-    tension: number;
-  }[];
-}
-
 export function EarningsChart({ userId }: { userId: string }) {
   const [chartData, setChartData] = useState<ChartData<'line'>>({
     labels: [],

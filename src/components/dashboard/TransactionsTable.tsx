@@ -33,11 +33,11 @@ export function TransactionsTable({ userId }: TransactionsTableProps) {
             id,
             created_at,
             amount,
-            post:post_id (
+            post:post_id!inner (
               id,
               description
             ),
-            buyer:buyer_id (
+            buyer:buyer_id!inner (
               id,
               name
             )
@@ -47,7 +47,7 @@ export function TransactionsTable({ userId }: TransactionsTableProps) {
           .limit(10);
 
         if (error) throw error;
-        setTransactions(data);
+        setTransactions(data as Transaction[]);
       } catch (err: any) {
         setError(err.message);
         console.error('Error fetching transactions:', err);
