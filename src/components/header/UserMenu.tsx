@@ -3,9 +3,16 @@
 import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
 import { Spinner } from '@/components/common/Spinner';
+import { useRouter } from 'next/navigation';
 
 export const UserMenu = () => {
   const { user, profile, loading, signOut } = useAuth();
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.refresh();
+  };
 
   if (loading) {
     return <Spinner className="w-8 h-8" />;
@@ -56,7 +63,7 @@ export const UserMenu = () => {
           Settings
         </Link>
         <button
-          onClick={signOut}
+          onClick={handleSignOut}
           className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
         >
           Sign Out

@@ -5,27 +5,7 @@ import type { NextRequest } from 'next/server';
 export async function middleware(request: NextRequest) {
   const res = NextResponse.next();
   const supabase = createMiddlewareClient({ req: request, res });
-
-  // Refresh session if expired - required for Server Components
-  const { data: { session }, error } = await supabase.auth.getSession();
-
-  // Handle specific routes
-  const path = request.nextUrl.pathname;
-  const isAuthRoute = path === '/login' || path === '/signup';
-  const isPublicRoute = path === '/';
-
-  if (!session && !isAuthRoute && !isPublicRoute) {
-    // Redirect unauthenticated users to login page
-    const redirectUrl = new URL('/login', request.url);
-    redirectUrl.searchParams.set('redirectedFrom', path);
-    return NextResponse.redirect(redirectUrl);
-  }
-
-  if (session && isAuthRoute) {
-    // Redirect authenticated users to dashboard
-    return NextResponse.redirect(new URL('/dashboard', request.url));
-  }
-
+  await supabase.auth.getSession();
   return res;
 }
 

@@ -37,11 +37,12 @@ export default function Settings() {
 
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, name, email, avatar_url, bio')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      if (!data) throw new Error('No profile found');
 
       setProfile(data);
       setFormData({
@@ -51,6 +52,7 @@ export default function Settings() {
       });
     } catch (error) {
       console.error('Error fetching profile:', error);
+      router.push('/login');
     } finally {
       setLoading(false);
     }

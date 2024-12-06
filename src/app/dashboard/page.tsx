@@ -16,7 +16,7 @@ interface DashboardStats {
 }
 
 export default function Dashboard() {
-  const { user, profile, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [stats, setStats] = useState<DashboardStats>({
     totalEarnings: 0,
@@ -62,7 +62,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      router.push('/login');
+      router.replace('/login');
       return;
     }
     if (user) {
@@ -89,7 +89,7 @@ export default function Dashboard() {
     );
   }
 
-  if (!user || !profile) return null;
+  if (!user) return null;
 
   if (error) {
     return (
@@ -97,12 +97,7 @@ export default function Dashboard() {
         <div className="bg-red-50 text-red-500 p-4 rounded-md mb-8">
           {error}
         </div>
-        <button 
-          onClick={fetchDashboardStats}
-          className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800"
-        >
-          Retry
-        </button>
+        <button onClick={fetchDashboardStats}>Retry</button>
       </div>
     );
   }

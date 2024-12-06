@@ -13,6 +13,7 @@ import {
   ChartData,
   ChartOptions
 } from 'chart.js';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Register Chart.js components
 ChartJS.register(
@@ -26,6 +27,7 @@ ChartJS.register(
 );
 
 export function EarningsChart({ userId }: { userId: string }) {
+  const { user } = useAuth();
   const [timeframe, setTimeframe] = useState<'7d' | '30d' | '90d'>('30d');
   const [chartData, setChartData] = useState<ChartData<'line'>>({
     labels: [],
@@ -37,11 +39,20 @@ export function EarningsChart({ userId }: { userId: string }) {
     }]
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!user || user.id !== userId) {
+      setError('Unauthorized');
+      setLoading(false);
+      return;
+    }
+
     const fetchEarningsData = async () => {
-      setLoading(true);
       try {
+        setLoading(true);
+        setError(null);
+        
         const days = timeframe === '7d' ? 7 : timeframe === '30d' ? 30 : 90;
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - days);
@@ -69,15 +80,24 @@ export function EarningsChart({ userId }: { userId: string }) {
             tension: 0.1
           }]
         });
-      } catch (error) {
-        console.error('Error fetching earnings data:', error);
+      } catch (err: any) {
+        console.error('Error fetching earnings data:', err);
+        setError(err?.message || 'Failed to load earnings data');
       } finally {
         setLoading(false);
       }
     };
 
     fetchEarningsData();
-  }, [userId, timeframe]);
+  }, [user, userId, timeframe]);
+
+  if (error === 'Unauthorized') {
+    return (
+      <div className="bg-red-50 text-red-500 p-4 rounded-md">
+        You don't have permission to view these earnings
+      </div>
+    );
+  }
 
   if (loading) {
     return (

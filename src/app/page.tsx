@@ -1,21 +1,14 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAuth } from '@/contexts/AuthContext';
 
 export default function Home() {
   const { user, loading } = useAuth();
   const router = useRouter();
 
-  useEffect(() => {
-    if (!loading && user) {
-      router.push('/dashboard');
-    }
-  }, [loading, user, router]);
-
-  if (loading || user) return null;
+  if (loading) return null;
 
   return (
     <div className="min-h-screen flex">

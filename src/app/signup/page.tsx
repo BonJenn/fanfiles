@@ -52,9 +52,9 @@ export default function Signup() {
           data: {
             name: formData.name,
             avatar_url: null,
-            bio: null
-          },
-          emailRedirectTo: `${window.location.origin}/auth/callback`
+            bio: null,
+            email: formData.email
+          }
         }
       });
       

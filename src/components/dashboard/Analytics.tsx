@@ -9,6 +9,14 @@ interface AnalyticsProps {
   creatorId: string;
 }
 
+interface ViewData {
+  id: string;
+  post_id: string;
+  viewer_id: string;
+  creator_id: string;
+  created_at: string;
+}
+
 export function Analytics({ creatorId }: AnalyticsProps) {
   const { user } = useAuth();
   const [data, setData] = useState<{
@@ -52,18 +60,28 @@ export function Analytics({ creatorId }: AnalyticsProps) {
       const [viewsData, revenueData, subscribersData] = await Promise.all([
         supabase
           .from('post_views')
-          .select('created_at')
-          .eq('creator_id', creatorId)
+          .select(`
+            created_at,
+            post_views.creator_id
+          `)
+          .eq('post_views.creator_id', creatorId)
           .gte('created_at', startDate.toISOString()),
         supabase
           .from('transactions')
-          .select('amount, created_at')
-          .eq('creator_id', creatorId)
+          .select(`
+            amount,
+            created_at,
+            transactions.creator_id
+          `)
+          .eq('transactions.creator_id', creatorId)
           .gte('created_at', startDate.toISOString()),
         supabase
           .from('subscriptions')
-          .select('created_at')
-          .eq('creator_id', creatorId)
+          .select(`
+            created_at,
+            subscriptions.creator_id
+          `)
+          .eq('subscriptions.creator_id', creatorId)
           .gte('created_at', startDate.toISOString())
       ]);
 
@@ -80,7 +98,7 @@ export function Analytics({ creatorId }: AnalyticsProps) {
       }, {} as Record<string, { views: number; revenue: number; subscribers: number }>);
 
       // Process views
-      viewsData.data?.forEach(view => {
+      viewsData.data?.forEach((view: ViewData) => {
         const date = new Date(view.created_at).toISOString().split('T')[0];
         if (dailyStats[date]) dailyStats[date].views++;
       });

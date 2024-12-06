@@ -14,12 +14,6 @@ export default function Login() {
   const router = useRouter();
   const { user } = useAuth();
 
-  // Redirect if already logged in
-  if (user) {
-    router.push('/dashboard');
-    return null;
-  }
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -32,9 +26,10 @@ export default function Login() {
       });
       
       if (error) throw error;
-      router.push('/dashboard');
+      router.replace('/dashboard');
       
     } catch (err: any) {
+      console.error('Login error:', err);
       setError(err.message || 'Failed to login');
     } finally {
       setLoading(false);
