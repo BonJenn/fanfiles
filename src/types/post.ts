@@ -6,10 +6,11 @@ export interface User {
   
   export interface Post {
     id: string;
+    title: string;
     url: string;
     type: 'image' | 'video';
     description: string;
-    price?: number;
+    price: number;
     is_public: boolean;
     created_at: string;
     creator_id: string;
