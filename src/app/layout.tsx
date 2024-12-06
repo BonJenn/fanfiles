@@ -1,4 +1,4 @@
-import { AuthProvider } from '@/contexts/AuthContext';
+import { Providers } from '@/components/Providers';
 import { Header } from '@/components/header/Header';
 import './globals.css';
 
@@ -9,11 +9,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-white">
-        <AuthProvider>
+      <body>
+        <Providers>
           <Header />
-          <main>{children}</main>
-        </AuthProvider>
+          {children}
+        </Providers>
       </body>
     </html>
   );
