@@ -36,11 +36,13 @@ export default function Dashboard() {
       startOfMonth.setDate(1);
       startOfMonth.setHours(0, 0, 0, 0);
 
-      const { data: stats } = await supabase
+      const { data: stats, error: supabaseError } = await supabase
         .rpc('get_creator_stats', { 
           creator_id: user.id,
           start_date: startOfMonth.toISOString()
         });
+
+      if (supabaseError) throw supabaseError;
 
       if (stats) {
         setStats({
@@ -50,9 +52,9 @@ export default function Dashboard() {
           recentViews: stats.monthly_views || 0
         });
       }
-    } catch (error) {
-      console.error('Error fetching dashboard stats:', error);
-      setError(error.message);
+    } catch (err: any) {
+      console.error('Error fetching dashboard stats:', err);
+      setError(err?.message || 'Failed to fetch dashboard stats');
     } finally {
       setLoading(false);
     }
