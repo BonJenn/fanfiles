@@ -64,12 +64,26 @@ export function EarningsChart({ userId }: { userId: string }) {
           .gte('created_at', startDate.toISOString())
           .order('created_at');
 
-        // Process data by date
-        const dailyEarnings = transactions?.reduce((acc, { created_at, amount }) => {
-          const date = new Date(created_at).toISOString().split('T')[0];
-          acc[date] = (acc[date] || 0) + (amount || 0) / 100;
+        // Create array of all dates in range
+        const dates = Array.from({ length: days }, (_, i) => {
+          const date = new Date();
+          date.setDate(date.getDate() - (days - 1 - i));
+          return date.toISOString().split('T')[0];
+        });
+
+        // Initialize earnings for all dates
+        const dailyEarnings = dates.reduce((acc, date) => {
+          acc[date] = 0;
           return acc;
-        }, {} as Record<string, number>) || {};
+        }, {} as Record<string, number>);
+
+        // Add transaction amounts to corresponding dates
+        transactions?.forEach(({ created_at, amount }) => {
+          const date = new Date(created_at).toISOString().split('T')[0];
+          if (dailyEarnings.hasOwnProperty(date)) {
+            dailyEarnings[date] += (amount || 0) / 100;
+          }
+        });
 
         setChartData({
           labels: Object.keys(dailyEarnings),
