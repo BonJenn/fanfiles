@@ -46,26 +46,25 @@ export function EarningsChart({ userId }: { userId: string }) {
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - days);
 
-        // Use a single query with aggregation
-        const { data: dailyEarnings } = await supabase
+        const { data: transactions } = await supabase
           .from('transactions')
-          .select('date:created_at::date, daily_total:amount::sum')
+          .select('created_at, amount')
           .eq('creator_id', userId)
           .gte('created_at', startDate.toISOString())
-          .group('created_at::date')
-          .order('created_at::date');
+          .order('created_at');
 
-        // Process data more efficiently
-        const processedData = dailyEarnings?.reduce((acc, { date, daily_total }) => {
-          acc[date] = (daily_total || 0) / 100;
+        // Process data by date
+        const dailyEarnings = transactions?.reduce((acc, { created_at, amount }) => {
+          const date = new Date(created_at).toISOString().split('T')[0];
+          acc[date] = (acc[date] || 0) + (amount || 0) / 100;
           return acc;
         }, {} as Record<string, number>) || {};
 
         setChartData({
-          labels: Object.keys(processedData),
+          labels: Object.keys(dailyEarnings),
           datasets: [{
             label: 'Daily Earnings',
-            data: Object.values(processedData),
+            data: Object.values(dailyEarnings),
             borderColor: '#000',
             tension: 0.1
           }]
