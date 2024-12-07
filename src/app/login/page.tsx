@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAuth } from '@/contexts/AuthContext';
 import { SearchWrapper } from '@/components/common/SearchWrapper';
 
 export default function LoginPage() {
@@ -25,7 +24,7 @@ function LoginContent() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
+    setError('');
     
     try {
       const { error } = await supabase.auth.signInWithPassword({
@@ -35,7 +34,6 @@ function LoginContent() {
       
       if (error) throw error;
       
-      // Let the auth state change handler manage the navigation
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         await router.replace('/dashboard');
@@ -44,6 +42,7 @@ function LoginContent() {
     } catch (err: any) {
       console.error('Login error:', err);
       setError(err.message || 'Failed to login');
+    } finally {
       setLoading(false);
     }
   };

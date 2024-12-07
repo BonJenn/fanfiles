@@ -1,6 +1,6 @@
+'use client';
+
 import { Line } from 'react-chartjs-2';
-import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -9,15 +9,11 @@ import {
   LineElement,
   Title,
   Tooltip,
-  Legend,
-  ChartData,
-  ChartOptions,
-  Filler
+  Legend
 } from 'chart.js';
-import { useAuth } from '@/contexts/AuthContext';
-import { useAnalytics } from '@/hooks/useAnalytics';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
 
-// Register Chart.js components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -25,135 +21,115 @@ ChartJS.register(
   LineElement,
   Title,
   Tooltip,
-  Legend,
-  Filler
+  Legend
 );
 
-export function EarningsChart({ userId }: { userId: string }) {
-  const { user } = useAuth();
-  const [timeframe, setTimeframe] = useState<'7d' | '30d' | '90d'>('30d');
-  const [chartData, setChartData] = useState<ChartData<'line'>>({
+interface EarningsChartProps {
+  userId: string;
+}
+
+export function EarningsChart({ userId }: EarningsChartProps) {
+  const [timeframe, setTimeframe] = useState<'7d' | '30d' | '90d'>('7d');
+  const [chartData, setChartData] = useState({
     labels: [],
-    datasets: [{
-      label: 'Earnings',
-      data: [],
-      borderColor: '#000',
-      backgroundColor: 'rgba(0, 0, 0, 0.1)',
-      fill: true,
-      tension: 0.4,
-      pointRadius: 4,
-      pointHoverRadius: 6
-    }]
+    datasets: [
+      {
+        label: 'Earnings Over Time',
+        data: [],
+        borderColor: 'rgb(75, 192, 192)',
+        tension: 0.1,
+        fill: true,
+        backgroundColor: 'rgba(75, 192, 192, 0.1)'
+      }
+    ]
   });
 
-  const { data, isLoading, error } = useAnalytics(userId, timeframe);
-
-  useEffect(() => {
-    if (data) {
-      setChartData({
-        labels: data.dates,
-        datasets: [{
-          label: 'Daily Earnings',
-          data: data.revenue,
-          borderColor: '#000',
-          backgroundColor: 'rgba(0, 0, 0, 0.1)',
-          fill: true,
-          tension: 0.4,
-          pointRadius: 4,
-          pointHoverRadius: 6
-        }]
-      });
-    }
-  }, [data]);
-
-  if (!user || user.id !== userId) {
-    return (
-      <div className="bg-red-50 text-red-500 p-4 rounded-md">
-        You don't have permission to view these earnings
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="bg-red-50 text-red-500 p-4 rounded-md">
-        Error loading earnings data
-      </div>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="w-8 h-8 border-4 border-black border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  const options: ChartOptions<'line'> = {
+  const options = {
     responsive: true,
-    maintainAspectRatio: false,
     plugins: {
       legend: {
-        display: false
+        position: 'top' as const,
       },
-      tooltip: {
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        titleColor: 'white',
-        bodyColor: 'white',
-        padding: 12,
-        cornerRadius: 8,
-        callbacks: {
-          label: function(context) {
-            return `$${context.raw as number}`;
-          }
-        }
-      }
+      title: {
+        display: true,
+        text: 'Earnings Over Time',
+      },
     },
     scales: {
-      x: {
-        grid: {
-          display: false
-        }
-      },
       y: {
-        type: 'linear',
         beginAtZero: true,
-        grid: {
-          color: 'rgba(0, 0, 0, 0.1)'
-        },
-        ticks: {
-          callback: function(value) {
-            return `$${value}`;
-          }
-        }
+        min: 0
       }
     }
   };
 
+  useEffect(() => {
+    const fetchEarningsData = async () => {
+      try {
+        const days = timeframe === '7d' ? 7 : timeframe === '30d' ? 30 : 90;
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - days);
+
+        const { data: transactions, error } = await supabase
+          .from('transactions')
+          .select('created_at, amount')
+          .eq('creator_id', userId)
+          .gte('created_at', startDate.toISOString())
+          .order('created_at');
+
+        if (error) throw error;
+
+        // Create array of all dates in range
+        const dates = Array.from({ length: days }, (_, i) => {
+          const date = new Date();
+          date.setDate(date.getDate() - (days - 1 - i));
+          return date;
+        });
+
+        // Initialize earnings for all dates
+        let cumulativeEarnings = 0;
+        const earningsData = dates.map(date => {
+          const dateStr = date.toISOString().split('T')[0];
+          const dayEarnings = transactions
+            ?.filter(t => t.created_at.split('T')[0] === dateStr)
+            .reduce((sum, t) => sum + (t.amount || 0) / 100, 0) || 0;
+          cumulativeEarnings += dayEarnings;
+          return cumulativeEarnings;
+        });
+
+        setChartData({
+          labels: dates.map(date => date.toLocaleDateString()),
+          datasets: [{
+            label: 'Earnings Over Time',
+            data: earningsData,
+            borderColor: 'rgb(75, 192, 192)',
+            tension: 0.1,
+            fill: true,
+            backgroundColor: 'rgba(75, 192, 192, 0.1)'
+          }]
+        });
+      } catch (err) {
+        console.error('Error fetching earnings data:', err);
+      }
+    };
+
+    fetchEarningsData();
+  }, [userId, timeframe]);
+
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm border">
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-lg font-medium">Earnings ({timeframe})</h3>
-        <div className="flex space-x-2">
-          {(['7d', '30d', '90d'] as const).map((t) => (
-            <button
-              key={t}
-              onClick={() => setTimeframe(t)}
-              className={`px-3 py-1 rounded-md text-sm ${
-                timeframe === t
-                  ? 'bg-black text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
+    <div>
+      <div className="flex justify-end mb-4">
+        <select 
+          value={timeframe}
+          onChange={(e) => setTimeframe(e.target.value as '7d' | '30d' | '90d')}
+          className="border rounded p-2"
+        >
+          <option value="7d">Last 7 days</option>
+          <option value="30d">Last 30 days</option>
+          <option value="90d">Last 90 days</option>
+        </select>
       </div>
-      <div className="h-64">
-        <Line data={chartData} options={options} />
-      </div>
+      <Line options={options} data={chartData} />
     </div>
   );
 }

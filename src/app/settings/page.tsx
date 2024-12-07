@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import Image from 'next/image';
@@ -25,44 +25,37 @@ export default function SettingsPage() {
 }
 
 function SettingsContent() {
-  const { user, loading: authLoading } = useAuth();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    fetchProfile();
-  }, []);
-
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
+    if (!user?.id) return;
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('No user found');
-
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, name, email, avatar_url, bio')
+        .select('*')
         .eq('id', user.id)
-        .maybeSingle();
+        .single();
 
       if (error) throw error;
-      if (!data) throw new Error('No profile found');
-
       setProfile(data);
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-      router.push('/login');
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]);
+
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setSuccess(false);
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -95,7 +88,6 @@ function SettingsContent() {
 
       if (updateError) throw updateError;
 
-      setSuccess(true);
       fetchProfile(); // Refresh profile data
     } catch (error: any) {
       setError(error.message);
@@ -131,12 +123,6 @@ function SettingsContent() {
         {error && (
           <div className="mb-4 p-4 bg-red-50 text-red-500 rounded-md">
             {error}
-          </div>
-        )}
-
-        {success && (
-          <div className="mb-4 p-4 bg-green-50 text-green-500 rounded-md">
-            Profile updated successfully!
           </div>
         )}
 

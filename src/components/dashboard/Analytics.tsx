@@ -1,24 +1,39 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useAnalytics } from '@/hooks/useAnalytics';
+import { useQuery } from '@tanstack/react-query';
 
 interface AnalyticsProps {
-  creatorId: string;
+  userId: string;
 }
 
-export function Analytics({ creatorId }: AnalyticsProps) {
-  const { user } = useAuth();
-  const [timeframe, setTimeframe] = useState<'7d' | '30d' | '90d'>('30d');
+export function Analytics({ userId }: AnalyticsProps) {
+  const [timeframe, setTimeframe] = useState('7d');
   
-  const { data, isLoading, error } = useAnalytics(creatorId, timeframe);
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['analytics', userId, timeframe],
+    queryFn: async () => {
+      // Implement your analytics fetch logic here
+      return {};
+    }
+  });
 
-  if (!user || user.id !== creatorId) {
-    return <div className="bg-red-50 text-red-500 p-4 rounded-md">
-      You don't have permission to view these analytics
-    </div>;
-  }
+  if (isLoading) return <div>Loading analytics...</div>;
+  if (error) return <div>Error loading analytics</div>;
+  if (!data) return null;
 
-  // Rest of your component render logic
+  return (
+    <div>
+      <select 
+        value={timeframe} 
+        onChange={(e) => setTimeframe(e.target.value)}
+        className="border rounded p-2"
+      >
+        <option value="7d">Last 7 days</option>
+        <option value="30d">Last 30 days</option>
+        <option value="90d">Last 90 days</option>
+      </select>
+      {/* Add your analytics visualization here */}
+    </div>
+  );
 }

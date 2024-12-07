@@ -1,45 +1,35 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { Post } from '@/types/post';
 import { CreatePostForm } from '@/components/posts/CreatePostForm';
 import { Modal } from '@/components/ui/Modal';
 
-interface ContentManagementProps {
-  userId: string;
-}
-
-export function ContentManagement({ userId }: ContentManagementProps) {
+export function ContentManagement() {
   const { user } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const fetchPosts = async () => {
-    if (!user || user.id !== userId) {
-      setError('Unauthorized');
-      return;
-    }
-
+  const fetchPosts = useCallback(async () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
         .from('posts')
         .select('*')
-        .eq('creator_id', userId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setPosts(data);
+      setPosts(data || []);
     } catch (err: any) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const handleDelete = async (postId: string) => {
     if (!user || user.id !== userId) {
@@ -61,13 +51,8 @@ export function ContentManagement({ userId }: ContentManagementProps) {
   };
 
   useEffect(() => {
-    if (!user || user.id !== userId) {
-      setError('Unauthorized');
-      setLoading(false);
-      return;
-    }
     fetchPosts();
-  }, [user, userId]);
+  }, [fetchPosts]);
 
   if (error === 'Unauthorized') {
     return (

@@ -15,15 +15,16 @@ export const SearchBar = ({ onSearch, placeholder = 'Search creators...' }: Sear
 
   useEffect(() => {
     const urlQuery = searchParams.get('q');
-    if (urlQuery) {
+    if (urlQuery && !query) {
       setQuery(urlQuery);
     }
-  }, [searchParams]);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
       onSearch(query.trim());
+      setQuery('');
     }
   };
 

@@ -1,10 +1,9 @@
 'use client';
 
-import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Spinner } from '@/components/common/Spinner';
 import { SearchWrapper } from '@/components/common/SearchWrapper';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function Home() {
   return (
@@ -15,8 +14,7 @@ export default function Home() {
 }
 
 function HomeContent() {
-  const { user, loading } = useAuth();
-  const router = useRouter();
+  const { loading } = useAuth();
 
   if (loading) {
     return <Spinner />;
