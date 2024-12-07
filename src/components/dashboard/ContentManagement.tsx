@@ -7,7 +7,11 @@ import { Post } from '@/types/post';
 import { CreatePostForm } from '@/components/posts/CreatePostForm';
 import { Modal } from '@/components/ui/Modal';
 
-export function ContentManagement() {
+interface ContentManagementProps {
+  userId: string;
+}
+
+export function ContentManagement({ userId }: ContentManagementProps) {
   const { user } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);

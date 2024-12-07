@@ -18,7 +18,7 @@ export const SearchBar = ({ onSearch, placeholder = 'Search creators...' }: Sear
     if (urlQuery && !query) {
       setQuery(urlQuery);
     }
-  }, []);
+  }, [searchParams, query]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
