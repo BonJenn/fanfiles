@@ -15,15 +15,6 @@ export const UserMenu = () => {
     router.refresh();
   };
 
-  const handleLogoClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (user) {
-      router.push('/feed');
-    } else {
-      router.push('/');
-    }
-  };
-
   if (loading) {
     return <Spinner className="w-8 h-8" />;
   }

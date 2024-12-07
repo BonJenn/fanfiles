@@ -1,25 +1,19 @@
 'use client';
 
-import { Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { Suspense, ReactNode } from 'react';
 import { Spinner } from '@/components/common/Spinner';
 
 interface SearchWrapperProps {
-  children: React.ReactNode | ((searchParams: URLSearchParams) => React.ReactNode);
-}
-
-function SearchContent({ children }: SearchWrapperProps) {
-  const searchParams = useSearchParams();
-  if (typeof children === 'function') {
-    return children(searchParams);
-  }
-  return children;
+  children: ReactNode;
 }
 
 export function SearchWrapper({ children }: SearchWrapperProps) {
   return (
     <Suspense fallback={<Spinner />}>
-      <SearchContent>{children}</SearchContent>
+      {children}
     </Suspense>
   );
 }
+
+
+</```rewritten_file>
