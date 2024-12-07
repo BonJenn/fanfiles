@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { Spinner } from '@/components/common/Spinner';
 
 interface SearchWrapperProps {
-  children: React.ReactNode;
+  children: React.ReactNode | ((searchParams: URLSearchParams) => React.ReactNode);
 }
 
 function SearchContent({ children }: SearchWrapperProps) {
@@ -23,3 +23,5 @@ export function SearchWrapper({ children }: SearchWrapperProps) {
     </Suspense>
   );
 }
+
+</```rewritten_file>
