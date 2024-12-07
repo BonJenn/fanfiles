@@ -4,12 +4,15 @@ import Link from 'next/link';
 import { Spinner } from '@/components/common/Spinner';
 import { SearchWrapper } from '@/components/common/SearchWrapper';
 import { useAuth } from '@/contexts/AuthContext';
+import { Suspense } from 'react';
 
 export default function Home() {
   return (
-    <SearchWrapper>
-      <HomeContent />
-    </SearchWrapper>
+    <Suspense fallback={<Spinner />}>
+      <SearchWrapper>
+        <HomeContent />
+      </SearchWrapper>
+    </Suspense>
   );
 }
 
