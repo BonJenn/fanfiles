@@ -1,12 +1,17 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { SearchWrapper } from '@/components/common/SearchWrapper';
 import { SearchResults } from '@/components/search/SearchResults';
 import { Spinner } from '@/components/common/Spinner';
 
 export default function SearchPage() {
-  return <SearchPageContent />;
+  return (
+    <Suspense fallback={<Spinner />}>
+      <SearchPageContent />
+    </Suspense>
+  );
 }
 
 function SearchPageContent() {
