@@ -6,14 +6,11 @@ import { Feed } from '@/components/feed/Feed';
 import { Spinner } from '@/components/common/Spinner';
 import { useAuth } from '@/contexts/AuthContext';
 import { SearchWrapper } from '@/components/common/SearchWrapper';
-import { Suspense } from 'react';
 
 export default function FeedPage() {
   return (
     <SearchWrapper>
-      <Suspense fallback={<Spinner />}>
-        <FeedContent />
-      </Suspense>
+      <FeedContent />
     </SearchWrapper>
   );
 }
