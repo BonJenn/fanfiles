@@ -5,8 +5,17 @@ import { useRouter } from 'next/navigation';
 import { Feed } from '@/components/feed/Feed';
 import { Spinner } from '@/components/common/Spinner';
 import { useAuth } from '@/contexts/AuthContext';
+import { SearchWrapper } from '@/components/common/SearchWrapper';
 
 export default function FeedPage() {
+  return (
+    <SearchWrapper>
+      <FeedContent />
+    </SearchWrapper>
+  );
+}
+
+function FeedContent() {
   const { user, loading } = useAuth();
   const router = useRouter();
 

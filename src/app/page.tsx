@@ -4,17 +4,22 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Spinner } from '@/components/common/Spinner';
+import { SearchWrapper } from '@/components/common/SearchWrapper';
 
 export default function Home() {
+  return (
+    <SearchWrapper>
+      <HomeContent />
+    </SearchWrapper>
+  );
+}
+
+function HomeContent() {
   const { user, loading } = useAuth();
   const router = useRouter();
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <Spinner />
-      </div>
-    );
+    return <Spinner />;
   }
 
   return (

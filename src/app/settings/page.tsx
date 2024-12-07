@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import Image from 'next/image';
 import { Spinner } from '@/components/common/Spinner';
+import { SearchWrapper } from '@/components/common/SearchWrapper';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Profile {
   id: string;
@@ -14,18 +16,21 @@ interface Profile {
   bio: string | null;
 }
 
-export default function Settings() {
-  const router = useRouter();
+export default function SettingsPage() {
+  return (
+    <SearchWrapper>
+      <SettingsContent />
+    </SearchWrapper>
+  );
+}
+
+function SettingsContent() {
+  const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [updating, setUpdating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [formData, setFormData] = useState({
-    name: '',
-    bio: '',
-    avatar: null as File | null
-  });
+  const router = useRouter();
 
   useEffect(() => {
     fetchProfile();
@@ -46,11 +51,6 @@ export default function Settings() {
       if (!data) throw new Error('No profile found');
 
       setProfile(data);
-      setFormData({
-        name: data.name || '',
-        bio: data.bio || '',
-        avatar: null
-      });
     } catch (error) {
       console.error('Error fetching profile:', error);
       router.push('/login');
@@ -61,7 +61,6 @@ export default function Settings() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setUpdating(true);
     setError(null);
     setSuccess(false);
 
@@ -100,8 +99,6 @@ export default function Settings() {
       fetchProfile(); // Refresh profile data
     } catch (error: any) {
       setError(error.message);
-    } finally {
-      setUpdating(false);
     }
   };
 
@@ -216,10 +213,9 @@ export default function Settings() {
             </button>
             <button
               type="submit"
-              disabled={updating}
-              className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 disabled:opacity-50"
+              className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800"
             >
-              {updating ? 'Saving...' : 'Save Changes'}
+              Save Changes
             </button>
           </div>
         </form>

@@ -7,6 +7,7 @@ import { TransactionsTable } from '@/components/dashboard/TransactionsTable';
 import { ContentManagement } from '@/components/dashboard/ContentManagement';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
+import { SearchWrapper } from '@/components/common/SearchWrapper';
 
 interface DashboardStats {
   totalEarnings: number;
@@ -15,7 +16,15 @@ interface DashboardStats {
   recentViews: number;
 }
 
-export default function Dashboard() {
+export default function DashboardPage() {
+  return (
+    <SearchWrapper>
+      <DashboardContent />
+    </SearchWrapper>
+  );
+}
+
+function DashboardContent() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [stats, setStats] = useState<DashboardStats>({
