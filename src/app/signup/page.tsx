@@ -15,5 +15,3 @@ export default function SignupPage() {
   );
 }
 
-</```
-rewritten_file>

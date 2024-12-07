@@ -15,4 +15,3 @@ export default function DashboardPage() {
   );
 }
 
-```</rewritten_file>
