@@ -10,12 +10,6 @@ export const UserMenu = () => {
   const { user, profile, loading, signOut } = useAuth();
   const router = useRouter();
 
-  const handleProfileClick = () => {
-    if (user) {
-      router.push(`/creator/${user.id}`);
-    }
-  };
-
   const handleSignOut = async () => {
     await signOut();
     router.refresh();
@@ -51,13 +45,18 @@ export const UserMenu = () => {
             width={32}
             height={32}
             className="w-full h-full object-cover"
-            onClick={handleProfileClick}
           />
         </div>
         <span className="text-gray-700">{profile.name}</span>
       </button>
 
       <div className="absolute right-0 -mt-1 w-48 bg-white rounded-md shadow-lg py-1 invisible group-hover:visible">
+        <Link
+          href={`/creator/${user.id}`}
+          className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+        >
+          My Profile
+        </Link>
         <Link
           href="/dashboard"
           className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
@@ -80,3 +79,4 @@ export const UserMenu = () => {
     </div>
   );
 };
+

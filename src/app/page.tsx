@@ -1,6 +1,8 @@
 'use client';
 
+import { useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Spinner } from '@/components/common/Spinner';
 import { SearchWrapper } from '@/components/common/SearchWrapper';
 import { useAuth } from '@/contexts/AuthContext';
@@ -17,11 +19,20 @@ export default function Home() {
 }
 
 function HomeContent() {
-  const { loading } = useAuth();
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.push('/feed');
+    }
+  }, [loading, user, router]);
 
   if (loading) {
     return <Spinner />;
   }
+
+  if (user) return null;
 
   return (
     <div className="min-h-screen flex">
