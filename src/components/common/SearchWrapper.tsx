@@ -8,12 +8,15 @@ interface SearchWrapperProps {
   children: ReactNode | ((searchParams: URLSearchParams) => ReactNode);
 }
 
-export function SearchWrapper({ children }: SearchWrapperProps) {
+function SearchContent({ children }: SearchWrapperProps) {
   const searchParams = useSearchParams();
+  return typeof children === 'function' ? children(searchParams) : children;
+}
 
+export function SearchWrapper(props: SearchWrapperProps) {
   return (
     <Suspense fallback={<Spinner />}>
-      {typeof children === 'function' ? children(searchParams) : children}
+      <SearchContent {...props} />
     </Suspense>
   );
 }
