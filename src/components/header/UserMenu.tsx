@@ -45,7 +45,7 @@ export const UserMenu = () => {
       >
         <div className="w-8 h-8 rounded-full overflow-hidden">
           <Image
-            src={profile.avatar_url || '/default-avatar.png'}
+            src={profile.avatar_url || '/default_profile_picture.jpg'}
             alt={profile.name}
             width={32}
             height={32}
@@ -56,7 +56,7 @@ export const UserMenu = () => {
       </button>
 
       {menuOpen && (
-        <div className="absolute right-0 mt-0 w-48 bg-white rounded-md shadow-lg py-1">
+        <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1" style={{ marginTop: '-3px' }}>
           <Link
             href={`/creator/${user.id}`}
             className="block px-4 py-2 text-darkestBlue hover:bg-lighterBlue"

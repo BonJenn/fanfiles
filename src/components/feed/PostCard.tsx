@@ -123,7 +123,7 @@ export const PostCard = ({ post }: PostCardProps) => {
         >
           <div className="relative w-8 h-8 rounded-full overflow-hidden">
             <Image
-              src={post.creator.avatar_url || '/default-avatar.png'}
+              src={post.creator.avatar_url || '/default_profile_picture.jpg'}
               alt={post.creator.name}
               fill
               className="object-cover"

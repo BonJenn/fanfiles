@@ -72,7 +72,7 @@ export function SettingsContent() {
         <div className="flex items-start gap-6">
           <div className="relative w-32 h-32">
             <Image
-              src={profile?.avatar_url || '/default-avatar.png'}
+              src={profile?.avatar_url || '/default_profile_picture.jpg'}
               alt={profile?.name || 'Profile'}
               fill
               className="rounded-full object-cover"
