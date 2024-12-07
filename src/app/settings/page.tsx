@@ -29,6 +29,11 @@ function SettingsContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>('');
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    bio: '',
+    avatar: null as File | null
+  });
   const router = useRouter();
 
   const fetchProfile = useCallback(async () => {
@@ -52,6 +57,17 @@ function SettingsContent() {
   useEffect(() => {
     fetchProfile();
   }, [fetchProfile]);
+
+  // Update formData when profile is loaded
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        name: profile.name || '',
+        bio: profile.bio || '',
+        avatar: null
+      });
+    }
+  }, [profile]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
