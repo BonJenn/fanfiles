@@ -26,7 +26,7 @@ function HomeContent() {
     }
   }, [loading, user, router]);
 
-  if (loading) {
+  if (loading || user) {
     return (
       <div className="flex justify-center items-center h-[calc(100vh-64px)]">
         <Spinner />
