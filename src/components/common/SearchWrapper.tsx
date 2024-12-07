@@ -23,5 +23,3 @@ export function SearchWrapper({ children }: SearchWrapperProps) {
     </Suspense>
   );
 }
-
-</```rewritten_file>
