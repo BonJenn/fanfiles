@@ -97,7 +97,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           if (mounted) {
             setUser(null);
             setProfile(null);
-            setLoading(false);
           }
           return;
         }
@@ -107,7 +106,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           const profileData = await fetchProfile(session.user.id);
           if (mounted) {
             setProfile(profileData);
-            setLoading(false);
           }
         }
       } catch (error) {
@@ -115,14 +113,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (mounted) {
           setUser(null);
           setProfile(null);
+        }
+      } finally {
+        if (mounted) {
           setLoading(false);
         }
       }
     };
 
-    initAuth();
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
+      
+      setLoading(true);
+      
       if (event === 'SIGNED_OUT' || !session) {
         setUser(null);
         setProfile(null);
@@ -135,10 +138,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const profileData = await fetchProfile(session.user.id);
         if (mounted) {
           setProfile(profileData);
-          setLoading(false);
         }
       }
+      setLoading(false);
     });
+
+    initAuth();
 
     return () => {
       mounted = false;
