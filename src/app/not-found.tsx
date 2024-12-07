@@ -21,5 +21,3 @@ export default function NotFound() {
     </SearchWrapper>
   );
 }
-</```
-rewritten_file>
