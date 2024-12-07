@@ -24,12 +24,12 @@ export const UserMenu = () => {
   if (!user || !profile) {
     return (
       <div className="space-x-4">
-        <Link href="/login" className="text-gray-700 hover:text-black">
+        <Link href="/login" className="text-white hover:text-darkerBlue">
           Login
         </Link>
         <Link
           href="/signup"
-          className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800"
+          className="bg-darkerBlue text-white px-4 py-2 rounded-md hover:bg-darkerBlue"
         >
           Sign Up
         </Link>
@@ -38,7 +38,7 @@ export const UserMenu = () => {
   }
 
   return (
-    <div className="relative">
+    <div className="relative" onMouseLeave={() => setMenuOpen(false)}>
       <button
         onClick={() => setMenuOpen(!menuOpen)}
         className="flex items-center space-x-2 hover:opacity-80"
@@ -56,28 +56,28 @@ export const UserMenu = () => {
       </button>
 
       {menuOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
+        <div className="absolute right-0 mt-0 w-48 bg-white rounded-md shadow-lg py-1">
           <Link
             href={`/creator/${user.id}`}
-            className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+            className="block px-4 py-2 text-darkestBlue hover:bg-lighterBlue"
           >
             My Profile
           </Link>
           <Link
             href="/dashboard"
-            className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+            className="block px-4 py-2 text-darkestBlue hover:bg-lighterBlue"
           >
             Dashboard
           </Link>
           <Link
             href="/settings"
-            className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+            className="block px-4 py-2 text-darkestBlue hover:bg-lighterBlue"
           >
             Settings
           </Link>
           <button
             onClick={handleSignOut}
-            className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+            className="block w-full text-left px-4 py-2 text-darkestBlue hover:bg-lighterBlue"
           >
             Sign Out
           </button>

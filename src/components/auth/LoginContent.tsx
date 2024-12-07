@@ -31,11 +31,11 @@ export function LoginContent() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-lightestBlue">
       <div className="max-w-md w-full space-y-8">
         <div>
-          <h2 className="text-3xl font-bold text-center">Welcome Back</h2>
-          <p className="mt-2 text-center text-gray-600">
+          <h2 className="text-3xl font-bold text-center text-darkGray">Welcome Back</h2>
+          <p className="mt-2 text-center text-darkGray">
             Sign in to continue to FanFiles
           </p>
         </div>
@@ -47,7 +47,7 @@ export function LoginContent() {
           
           <div className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="email" className="block text-sm font-medium text-darkGray">
                 Email
               </label>
               <input
@@ -56,12 +56,12 @@ export function LoginContent() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black"
+                className="mt-1 block w-full px-3 py-2 border border-lightBlue rounded-md shadow-sm focus:outline-none focus:ring-blue focus:border-blue"
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="block text-sm font-medium text-darkGray">
                 Password
               </label>
               <input
@@ -70,7 +70,7 @@ export function LoginContent() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black"
+                className="mt-1 block w-full px-3 py-2 border border-lightBlue rounded-md shadow-sm focus:outline-none focus:ring-blue focus:border-blue"
               />
             </div>
           </div>
@@ -78,13 +78,13 @@ export function LoginContent() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black disabled:opacity-50"
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-white bg-blue hover:bg-darkerBlue focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue disabled:opacity-50"
           >
             {loading ? 'Signing in...' : 'Sign in'}
           </button>
 
           <div className="text-center">
-            <Link href="/signup" className="text-sm text-gray-600 hover:text-black">
+            <Link href="/signup" className="text-sm text-darkGray hover:text-blue">
               Don't have an account? Sign up
             </Link>
           </div>
