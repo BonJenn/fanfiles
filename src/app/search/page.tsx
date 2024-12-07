@@ -8,11 +8,9 @@ import { Spinner } from '@/components/common/Spinner';
 
 export default function SearchPage() {
   return (
-    <SearchWrapper>
-      <Suspense fallback={<Spinner />}>
-        <SearchPageContent />
-      </Suspense>
-    </SearchWrapper>
+    <Suspense fallback={<Spinner />}>
+      <SearchPageContent />
+    </Suspense>
   );
 }
 

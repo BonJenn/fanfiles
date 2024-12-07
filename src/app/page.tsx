@@ -11,7 +11,6 @@ import { Header } from '@/components/header/Header';
 export default function Home() {
   return (
     <Suspense fallback={<Spinner />}>
-      <Header />
       <SearchWrapper>
         <HomeContent />
       </SearchWrapper>
@@ -38,25 +37,29 @@ function HomeContent() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to FanFiles</h1>
-        <p className="text-gray-600 mb-8">Share and discover exclusive content</p>
-        <div className="space-x-4">
-          <Link
-            href="/login"
-            className="inline-block bg-black text-white px-6 py-3 rounded-md hover:bg-gray-800"
-          >
-            Login
-          </Link>
-          <Link
-            href="/signup"
-            className="inline-block bg-white text-black px-6 py-3 rounded-md border border-black hover:bg-gray-100"
-          >
-            Sign Up
-          </Link>
-        </div>
+    <div className="flex h-screen">
+      <div className="flex-1 bg-black text-white flex flex-col justify-center items-start p-16 pl-20">
+        <h1 className="text-5xl font-bold mb-4">Create More.</h1>
+        <h1 className="text-5xl font-bold mb-4">Share More.</h1>
+        <h1 className="text-5xl font-bold mb-4">Earn More.</h1>
+        <p className="text-lg text-gray-400 mt-2">A platform where creators can share exclusive content with their biggest supporters.</p>
+      </div>
+      <div className="flex-1 flex flex-col justify-center items-center p-8">
+        <h2 className="text-3xl font-semibold mb-4">Get Started</h2>
+        <Link
+          href="/signup"
+          className="inline-block bg-black text-white w-48 text-center py-3 rounded-md mb-3 text-lg"
+        >
+          Create Account
+        </Link>
+        <Link
+          href="/login"
+          className="inline-block bg-white text-black w-48 text-center py-3 rounded-md border border-black text-lg"
+        >
+          Login
+        </Link>
       </div>
     </div>
   );
 }
+
