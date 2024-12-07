@@ -15,5 +15,3 @@ export function SearchWrapper({ children }: SearchWrapperProps) {
   );
 }
 
-
-</```rewritten_file>
