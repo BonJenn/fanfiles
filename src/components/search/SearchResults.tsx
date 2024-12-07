@@ -85,16 +85,12 @@ export function SearchResults({ initialQuery }: SearchResultsProps) {
         >
           <div className="flex items-center space-x-4">
             <div className="relative w-12 h-12">
-              {creator.avatar_url ? (
-                <Image
-                  src={creator.avatar_url}
-                  alt={creator.name}
-                  fill
-                  className="rounded-full object-cover"
-                />
-              ) : (
-                <div className="w-12 h-12 bg-gray-200 rounded-full" />
-              )}
+              <Image
+                src={creator.avatar_url || '/default_profile_picture.jpg'}
+                alt={creator.name}
+                fill
+                className="rounded-full object-cover"
+              />
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="font-medium truncate">{creator.name}</h3>
