@@ -1,17 +1,21 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Spinner } from '@/components/common/Spinner';
 import { SearchWrapper } from '@/components/common/SearchWrapper';
 import { useAuth } from '@/contexts/AuthContext';
+import { Header } from '@/components/header/Header';
 
 export default function Home() {
   return (
-    <SearchWrapper>
-      <HomeContent />
-    </SearchWrapper>
+    <Suspense fallback={<Spinner />}>
+      <Header />
+      <SearchWrapper>
+        <HomeContent />
+      </SearchWrapper>
+    </Suspense>
   );
 }
 
