@@ -150,15 +150,17 @@ export default function Settings() {
               Profile Picture
             </label>
             <div className="flex items-center space-x-6">
-              <div className="relative w-20 h-20">
-                <Image
-                  src={profile.avatar_url || '/default-avatar.png'}
-                  alt="Profile"
-                  width={80}
-                  height={80}
-                  className="rounded-full object-cover"
-                />
-              </div>
+              {formData.avatar && (
+                <div className="relative w-20 h-20">
+                  <Image
+                    src={URL.createObjectURL(formData.avatar)}
+                    alt="Profile Preview"
+                    width={80}
+                    height={80}
+                    className="rounded-full object-cover"
+                  />
+                </div>
+              )}
               <input
                 type="file"
                 accept="image/*"

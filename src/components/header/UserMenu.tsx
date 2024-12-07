@@ -4,10 +4,17 @@ import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
 import { Spinner } from '@/components/common/Spinner';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 export const UserMenu = () => {
   const { user, profile, loading, signOut } = useAuth();
   const router = useRouter();
+
+  const handleProfileClick = () => {
+    if (user) {
+      router.push(`/creator/${user.id}`);
+    }
+  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -36,15 +43,16 @@ export const UserMenu = () => {
 
   return (
     <div className="relative group">
-      <button className="flex items-center space-x-2">
-        <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden">
-          {profile.avatar_url && (
-            <img
-              src={profile.avatar_url}
-              alt={profile.name}
-              className="w-full h-full object-cover"
-            />
-          )}
+      <button className="flex items-center space-x-2 hover:opacity-80">
+        <div className="w-8 h-8 rounded-full overflow-hidden">
+          <Image
+            src={profile.avatar_url || '/default-avatar.png'}
+            alt={profile.name}
+            width={32}
+            height={32}
+            className="w-full h-full object-cover"
+            onClick={handleProfileClick}
+          />
         </div>
         <span className="text-gray-700">{profile.name}</span>
       </button>
