@@ -9,7 +9,8 @@ import {
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  ChartData
 } from 'chart.js';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
@@ -30,7 +31,7 @@ interface EarningsChartProps {
 
 export function EarningsChart({ userId }: EarningsChartProps) {
   const [timeframe, setTimeframe] = useState<'7d' | '30d' | '90d'>('7d');
-  const [chartData, setChartData] = useState({
+  const [chartData, setChartData] = useState<ChartData<'line'>>({
     labels: [],
     datasets: [
       {
