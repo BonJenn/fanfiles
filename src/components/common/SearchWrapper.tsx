@@ -1,16 +1,11 @@
 'use client';
 
-import { Suspense, ReactNode } from 'react';
-import { Spinner } from '@/components/common/Spinner';
+import { ReactNode } from 'react';
 
 interface SearchWrapperProps {
   children: ReactNode;
 }
 
 export function SearchWrapper({ children }: SearchWrapperProps) {
-  return (
-    <Suspense fallback={<Spinner />}>
-      {children}
-    </Suspense>
-  );
+  return children;
 }
