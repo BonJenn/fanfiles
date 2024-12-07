@@ -18,6 +18,7 @@ interface CreatorProfile {
 
 export default function CreatorProfile() {
   const params = useParams();
+  const creatorId = typeof params.id === 'string' ? params.id : params.id?.[0];
   const [profile, setProfile] = useState<CreatorProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +36,7 @@ export default function CreatorProfile() {
             subscriber_count,
             post_count
           `)
-          .eq('id', params.id)
+          .eq('id', creatorId)
           .single();
 
         if (error) throw error;
@@ -48,7 +49,7 @@ export default function CreatorProfile() {
     };
 
     fetchProfile();
-  }, [params.id]);
+  }, [creatorId]);
 
   if (loading) {
     return (
@@ -98,7 +99,7 @@ export default function CreatorProfile() {
       </div>
 
       {/* Creator's Content */}
-      <Feed creatorId={params.id} subscribedContent={false} />
+      <Feed creatorId={creatorId} subscribedContent={false} />
     </div>
   );
 }
