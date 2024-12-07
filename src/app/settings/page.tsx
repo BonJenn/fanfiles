@@ -27,7 +27,7 @@ export default function SettingsPage() {
 function SettingsContent() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string | null>('');
   const [profile, setProfile] = useState<Profile | null>(null);
   const router = useRouter();
 
@@ -55,7 +55,7 @@ function SettingsContent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    setError('');
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
