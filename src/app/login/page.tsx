@@ -27,10 +27,11 @@ export default function Login() {
       
       if (error) throw error;
       
-      // Force a refresh of the auth state before redirecting
-      await supabase.auth.getSession();
-      router.replace('/dashboard');
-      router.refresh();
+      // Wait for session to be established
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        router.replace('/dashboard');
+      }
       
     } catch (err: any) {
       console.error('Login error:', err);
