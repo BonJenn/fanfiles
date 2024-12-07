@@ -88,9 +88,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     let mounted = true;
+    let refreshTimer: NodeJS.Timeout;
 
     const initAuth = async () => {
       try {
+        setLoading(true);
         const { data: { session } } = await supabase.auth.getSession();
 
         if (!session) {
@@ -126,7 +128,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     };
 
+    // Refresh session every 4 minutes
+    const startSessionRefresh = () => {
+      refreshTimer = setInterval(async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          clearInterval(refreshTimer);
+          setUser(null);
+          setProfile(null);
+        }
+      }, 240000); // 4 minutes
+    };
+
     initAuth();
+    startSessionRefresh();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_OUT') {
@@ -146,6 +161,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     return () => {
       mounted = false;
+      if (refreshTimer) clearInterval(refreshTimer);
       subscription.unsubscribe();
     };
   }, []);

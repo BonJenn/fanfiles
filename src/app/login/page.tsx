@@ -26,7 +26,11 @@ export default function Login() {
       });
       
       if (error) throw error;
+      
+      // Force a refresh of the auth state before redirecting
+      await supabase.auth.getSession();
       router.replace('/dashboard');
+      router.refresh();
       
     } catch (err: any) {
       console.error('Login error:', err);
