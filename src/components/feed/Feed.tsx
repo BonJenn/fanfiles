@@ -9,7 +9,12 @@ import { supabase } from '@/lib/supabase';
 export type SortOption = 'newest' | 'oldest' | 'price_high' | 'price_low';
 export type ContentType = 'all' | 'image' | 'video';
 
-export const Feed = ({ subscribedContent }: { subscribedContent: boolean }) => {
+interface FeedProps {
+  subscribedContent: boolean;
+  creatorId?: string;
+}
+
+export const Feed = ({ subscribedContent, creatorId }: FeedProps) => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [contentType, setContentType] = useState<ContentType>('all');
@@ -30,6 +35,11 @@ export const Feed = ({ subscribedContent }: { subscribedContent: boolean }) => {
             )
           `);
 
+        // Apply creator filter if provided
+        if (creatorId) {
+          query = query.eq('creator_id', creatorId);
+        }
+
         // Apply content type filter
         if (contentType !== 'all') {
           query = query.eq('type', contentType);
@@ -48,34 +58,18 @@ export const Feed = ({ subscribedContent }: { subscribedContent: boolean }) => {
           }
         }
 
-        // Apply sorting
-        switch (sortBy) {
-          case 'newest':
-            query = query.order('created_at', { ascending: false });
-            break;
-          case 'oldest':
-            query = query.order('created_at', { ascending: true });
-            break;
-          case 'price_high':
-            query = query.order('price', { ascending: false });
-            break;
-          case 'price_low':
-            query = query.order('price', { ascending: true });
-            break;
-        }
-
         const { data, error } = await query;
         if (error) throw error;
-        setPosts(data);
-      } catch (error) {
-        console.error('Error fetching posts:', error);
+        setPosts(data || []);
+      } catch (err) {
+        console.error('Error fetching posts:', err);
       } finally {
         setLoading(false);
       }
     };
 
     fetchPosts();
-  }, [sortBy, contentType, searchQuery, subscribedContent]);
+  }, [contentType, searchQuery, subscribedContent, creatorId]);
 
   return (
     <div className="space-y-6">
