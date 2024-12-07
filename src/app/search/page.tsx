@@ -1,5 +1,6 @@
 'use client';
 
+import { useSearchParams } from 'next/navigation';
 import { SearchWrapper } from '@/components/common/SearchWrapper';
 import { SearchResults } from '@/components/search/SearchResults';
 
