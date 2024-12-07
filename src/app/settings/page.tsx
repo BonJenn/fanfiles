@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import Image from 'next/image';
+import { Spinner } from '@/components/common/Spinner';
 
 interface Profile {
   id: string;
@@ -116,7 +117,13 @@ export default function Settings() {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-[calc(100vh-64px)]">
+        <Spinner />
+      </div>
+    );
+  }
   if (!profile) return <div>Please log in</div>;
 
   return (

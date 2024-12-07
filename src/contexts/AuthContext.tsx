@@ -91,10 +91,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const initAuth = async () => {
       try {
-        setLoading(true);
         const { data: { session } } = await supabase.auth.getSession();
 
-        if (session?.user && mounted) {
+        if (!session) {
+          setUser(null);
+          setProfile(null);
+          setLoading(false);
+          return;
+        }
+
+        if (session?.user) {
           const now = new Date().getTime();
           const expiresAt = session.expires_at ? session.expires_at * 1000 : 0;
           
