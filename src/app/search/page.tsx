@@ -1,6 +1,6 @@
 'use client';
 
-import { SearchWrapper } from '@/components/search/SearchWrapper';
+import { SearchWrapper } from '@/components/common/SearchWrapper';
 import { SearchResults } from '@/components/search/SearchResults';
 
 export default function SearchPage() {
