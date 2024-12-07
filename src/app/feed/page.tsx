@@ -1,28 +1,17 @@
 'use client';
 
-import { useEffect, Suspense } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Feed } from '@/components/feed/Feed';
 import { Spinner } from '@/components/common/Spinner';
 import { useAuth } from '@/contexts/AuthContext';
 import { SearchWrapper } from '@/components/common/SearchWrapper';
 
-interface Profile {
-  id: string;
-  name: string;
-  email: string;
-  bio: string | null;
-  avatar_url: string | null;
-  updated_at: string;
-}
-
 export default function FeedPage() {
   return (
-    <Suspense fallback={<Spinner />}>
-      <SearchWrapper>
-        <FeedContent />
-      </SearchWrapper>
-    </Suspense>
+    <SearchWrapper>
+      <FeedContent />
+    </SearchWrapper>
   );
 }
 

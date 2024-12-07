@@ -20,4 +20,3 @@ export function SearchWrapper(props: SearchWrapperProps) {
     </Suspense>
   );
 }
-
