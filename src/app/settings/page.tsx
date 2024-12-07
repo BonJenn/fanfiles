@@ -154,7 +154,8 @@ export default function Settings() {
                 <Image
                   src={profile.avatar_url || '/default-avatar.png'}
                   alt="Profile"
-                  fill
+                  width={80}
+                  height={80}
                   className="rounded-full object-cover"
                 />
               </div>
