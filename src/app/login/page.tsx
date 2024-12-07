@@ -27,16 +27,15 @@ export default function Login() {
       
       if (error) throw error;
       
-      // Wait for session to be established
+      // Let the auth state change handler manage the navigation
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        router.replace('/dashboard');
+        await router.replace('/dashboard');
       }
       
     } catch (err: any) {
       console.error('Login error:', err);
       setError(err.message || 'Failed to login');
-    } finally {
       setLoading(false);
     }
   };

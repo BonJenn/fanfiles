@@ -87,56 +87,52 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_OUT') {
+    let mounted = true;
+
+    // Single source of truth for session management
+    const handleSession = async (session: Session | null) => {
+      if (!mounted) return;
+
+      if (!session) {
         setUser(null);
         setProfile(null);
         setLoading(false);
         return;
       }
 
-      if (session?.user) {
-        setUser(session.user);
-        const profileData = await fetchProfile(session.user.id);
+      setUser(session.user);
+      const profileData = await fetchProfile(session.user.id);
+      if (mounted) {
         setProfile(profileData);
-      } else {
-        setUser(null);
-        setProfile(null);
+        setLoading(false);
       }
-      setLoading(false);
-    });
+    };
 
     // Initial session check
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setUser(session.user);
-        fetchProfile(session.user.id).then(profileData => {
-          setProfile(profileData);
-          setLoading(false);
-        });
-      } else {
-        setUser(null);
-        setProfile(null);
-        setLoading(false);
-      }
+      handleSession(session);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      handleSession(session);
     });
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
   }, []);
 
   const signOut = async () => {
+    setLoading(true);
     try {
       await supabase.auth.signOut();
-      setUser(null);
-      setProfile(null);
-      window.location.href = '/';
+      router.push('/');
     } catch (error) {
       console.error('Error signing out:', error);
-      setUser(null);
-      setProfile(null);
-      window.location.href = '/';
+    } finally {
+      setLoading(false);
     }
   };
 
