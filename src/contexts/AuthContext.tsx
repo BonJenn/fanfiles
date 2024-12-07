@@ -95,6 +95,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const { data: { session } } = await supabase.auth.getSession();
 
         if (session?.user && mounted) {
+          const now = new Date().getTime();
+          const expiresAt = session.expires_at ? session.expires_at * 1000 : 0;
+          
+          if (now >= expiresAt) {
+            await signOut();
+            return;
+          }
+
           setUser(session.user);
           const profileData = await fetchProfile(session.user.id);
           if (mounted && profileData) {
@@ -103,6 +111,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       } catch (error) {
         console.error('Error in initAuth:', error);
+        setUser(null);
+        setProfile(null);
       } finally {
         if (mounted) {
           setLoading(false);
@@ -113,15 +123,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     initAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+        setUser(null);
+        setProfile(null);
+        return;
+      }
+
       if (session?.user) {
         setUser(session.user);
         const profileData = await fetchProfile(session.user.id);
         if (mounted && profileData) {
           setProfile(profileData);
         }
-      } else {
-        setUser(null);
-        setProfile(null);
       }
     });
 
@@ -133,13 +146,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      await supabase.auth.signOut();
       setUser(null);
       setProfile(null);
+      window.location.href = '/';
     } catch (error) {
       console.error('Error signing out:', error);
-      throw error;
+      setUser(null);
+      setProfile(null);
+      window.location.href = '/';
     }
   };
 
