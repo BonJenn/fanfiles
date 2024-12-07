@@ -7,6 +7,7 @@ import { SearchBar } from '@/components/common/SearchBar';
 import Image from 'next/image';
 import { Spinner } from '@/components/common/Spinner';
 import { SearchWrapper } from '@/components/search/SearchWrapper';
+import { SearchResults } from '@/components/search/SearchResults';
 
 interface Creator {
   id: string;
