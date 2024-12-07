@@ -5,10 +5,12 @@ import Link from 'next/link';
 import { Spinner } from '@/components/common/Spinner';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { useState } from 'react';
 
 export const UserMenu = () => {
   const { user, profile, loading, signOut } = useAuth();
   const router = useRouter();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const handleSignOut = async () => {
     await signOut();
@@ -36,8 +38,11 @@ export const UserMenu = () => {
   }
 
   return (
-    <div className="relative group">
-      <button className="flex items-center space-x-2 hover:opacity-80">
+    <div className="relative">
+      <button
+        onClick={() => setMenuOpen(!menuOpen)}
+        className="flex items-center space-x-2 hover:opacity-80"
+      >
         <div className="w-8 h-8 rounded-full overflow-hidden">
           <Image
             src={profile.avatar_url || '/default-avatar.png'}
@@ -50,33 +55,38 @@ export const UserMenu = () => {
         <span className="text-gray-700">{profile.name}</span>
       </button>
 
-      <div className="absolute right-0 -mt-1 w-48 bg-white rounded-md shadow-lg py-1 invisible group-hover:visible">
-        <Link
-          href={`/creator/${user.id}`}
-          className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-        >
-          My Profile
-        </Link>
-        <Link
-          href="/dashboard"
-          className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-        >
-          Dashboard
-        </Link>
-        <Link
-          href="/settings"
-          className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-        >
-          Settings
-        </Link>
-        <button
-          onClick={handleSignOut}
-          className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
-        >
-          Sign Out
-        </button>
-      </div>
+      {menuOpen && (
+        <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
+          <Link
+            href={`/creator/${user.id}`}
+            className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+          >
+            My Profile
+          </Link>
+          <Link
+            href="/dashboard"
+            className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+          >
+            Dashboard
+          </Link>
+          <Link
+            href="/settings"
+            className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+          >
+            Settings
+          </Link>
+          <button
+            onClick={handleSignOut}
+            className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+          >
+            Sign Out
+          </button>
+        </div>
+      )}
     </div>
   );
 };
 
+
+</```
+rewritten_file>
