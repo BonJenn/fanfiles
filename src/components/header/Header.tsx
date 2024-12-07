@@ -4,6 +4,8 @@ import { UserMenu } from './UserMenu';
 import { SearchBar } from '@/components/common/SearchBar';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Suspense } from 'react';
+import { Spinner } from '@/components/common/Spinner';
 
 export const Header = () => {
   const router = useRouter();
@@ -22,7 +24,9 @@ export const Header = () => {
 
         {/* Search Bar */}
         <div className="max-w-md w-full mx-4">
-          <SearchBar onSearch={handleSearch} />
+          <Suspense fallback={<Spinner />}>
+            <SearchBar onSearch={handleSearch} />
+          </Suspense>
         </div>
 
         {/* User Menu */}
