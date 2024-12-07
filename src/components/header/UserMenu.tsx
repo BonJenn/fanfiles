@@ -87,6 +87,3 @@ export const UserMenu = () => {
   );
 };
 
-
-</```
-rewritten_file>
