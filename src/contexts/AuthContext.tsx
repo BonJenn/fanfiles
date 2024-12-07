@@ -88,80 +88,60 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     let mounted = true;
-    let refreshTimer: NodeJS.Timeout;
 
     const initAuth = async () => {
       try {
-        setLoading(true);
         const { data: { session } } = await supabase.auth.getSession();
-
+        
         if (!session) {
-          setUser(null);
-          setProfile(null);
-          setLoading(false);
+          if (mounted) {
+            setUser(null);
+            setProfile(null);
+            setLoading(false);
+          }
           return;
         }
 
-        if (session?.user) {
-          const now = new Date().getTime();
-          const expiresAt = session.expires_at ? session.expires_at * 1000 : 0;
-          
-          if (now >= expiresAt) {
-            await signOut();
-            return;
-          }
-
+        if (session?.user && mounted) {
           setUser(session.user);
           const profileData = await fetchProfile(session.user.id);
-          if (mounted && profileData) {
+          if (mounted) {
             setProfile(profileData);
+            setLoading(false);
           }
         }
       } catch (error) {
         console.error('Error in initAuth:', error);
-        setUser(null);
-        setProfile(null);
-      } finally {
         if (mounted) {
+          setUser(null);
+          setProfile(null);
           setLoading(false);
         }
       }
     };
 
-    // Refresh session every 4 minutes
-    const startSessionRefresh = () => {
-      refreshTimer = setInterval(async () => {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-          clearInterval(refreshTimer);
-          setUser(null);
-          setProfile(null);
-        }
-      }, 240000); // 4 minutes
-    };
-
     initAuth();
-    startSessionRefresh();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_OUT') {
+      if (event === 'SIGNED_OUT' || !session) {
         setUser(null);
         setProfile(null);
+        setLoading(false);
         return;
       }
 
       if (session?.user) {
         setUser(session.user);
         const profileData = await fetchProfile(session.user.id);
-        if (mounted && profileData) {
+        if (mounted) {
           setProfile(profileData);
+          setLoading(false);
         }
       }
     });
 
     return () => {
       mounted = false;
-      if (refreshTimer) clearInterval(refreshTimer);
       subscription.unsubscribe();
     };
   }, []);
