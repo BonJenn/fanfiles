@@ -5,12 +5,12 @@ import { useSearchParams } from 'next/navigation';
 import { Spinner } from '@/components/common/Spinner';
 
 interface SearchWrapperProps {
-  children: ReactNode;
+  children: ReactNode | ((searchParams: URLSearchParams) => ReactNode);
 }
 
 function SearchContent({ children }: SearchWrapperProps) {
-  useSearchParams();
-  return children;
+  const searchParams = useSearchParams();
+  return typeof children === 'function' ? children(searchParams) : children;
 }
 
 export function SearchWrapper({ children }: SearchWrapperProps) {
