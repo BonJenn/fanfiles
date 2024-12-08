@@ -106,7 +106,11 @@ export const CreatePostForm = ({ onSuccess }: CreatePostFormProps) => {
       uploadData.append('file', formData.file);
       xhr.send(uploadData);
     } catch (err) {
-      setError(err.message || 'Failed to upload file. Please try again.');
+      if (err instanceof Error) {
+        setError(err.message || 'Failed to upload file. Please try again.');
+      } else {
+        setError('Failed to upload file. Please try again.');
+      }
       setLoading(false);
     }
   };
