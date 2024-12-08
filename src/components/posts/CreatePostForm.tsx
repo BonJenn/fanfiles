@@ -26,10 +26,8 @@ export const CreatePostForm = ({ onSuccess }: CreatePostFormProps) => {
     const file = e.target.files?.[0];
     if (file) {
       setFormData(prev => ({ ...prev, file }));
-      // Create preview URL
       const url = URL.createObjectURL(file);
       setPreview(url);
-      // Set type based on file mimetype
       const type = file.type.startsWith('video/') ? 'video' : 'image';
       setFormData(prev => ({ ...prev, type }));
     }
@@ -50,57 +48,65 @@ export const CreatePostForm = ({ onSuccess }: CreatePostFormProps) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // Upload file with progress tracking
       const fileExt = formData.file.name.split('.').pop();
       const fileName = `${user.id}-${Math.random()}.${fileExt}`;
-      const { error: uploadError, data: _data } = await supabase.storage
-        .from('posts')
-        .upload(fileName, formData.file, {
-          onUploadProgress: (progressEvent) => {
-            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-            setUploadProgress(percentCompleted);
-          }
-        });
+      const filePath = `posts/${fileName}`;
 
-      if (uploadError) throw uploadError;
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/${filePath}`, true);
+      xhr.setRequestHeader('Authorization', `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`);
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percentCompleted = Math.round((event.loaded * 100) / event.total);
+          setUploadProgress(percentCompleted);
+        }
+      };
 
-      // After uploading the file, construct the full URL
-      const storageUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/posts`;
-      const fileUrl = `${storageUrl}/${_data.path}`;
+      xhr.onload = async () => {
+        if (xhr.status === 200) {
+          const storageUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/posts`;
+          const fileUrl = `${storageUrl}/${filePath}`;
 
-      console.log('Constructed file URL:', fileUrl);
+          const { error: postError } = await supabase
+            .from('posts')
+            .insert({
+              title: formData.title,
+              url: fileUrl,
+              type: formData.type,
+              description: formData.description,
+              price: formData.price,
+              is_public: formData.is_public,
+              creator_id: user.id
+            });
 
-      // Create post record with the full URL
-      const { error: postError } = await supabase
-        .from('posts')
-        .insert({
-          title: formData.title,
-          url: fileUrl,
-          type: formData.type,
-          description: formData.description,
-          price: formData.price,
-          is_public: formData.is_public,
-          creator_id: user.id
-        });
+          if (postError) throw postError;
 
-      if (postError) throw postError;
+          setFormData({
+            file: null,
+            type: 'image',
+            title: '',
+            description: '',
+            price: 0,
+            is_public: true
+          });
+          setPreview(null);
+          onSuccess?.();
+        } else {
+          setError('Failed to upload file. Please try again.');
+        }
+        setLoading(false);
+      };
 
-      // Reset form
-      setFormData({
-        file: null,
-        type: 'image',
-        title: '',
-        description: '',
-        price: 0,
-        is_public: true
-      });
-      setPreview(null);
-      
-      // Call success callback
-      onSuccess?.();
+      xhr.onerror = () => {
+        setError('Failed to upload file. Please try again.');
+        setLoading(false);
+      };
+
+      const formData = new FormData();
+      formData.append('file', formData.file);
+      xhr.send(formData);
     } catch (err) {
       setError(err.message || 'Failed to upload file. Please try again.');
-    } finally {
       setLoading(false);
     }
   };
@@ -144,6 +150,16 @@ export const CreatePostForm = ({ onSuccess }: CreatePostFormProps) => {
         )}
       </div>
 
+      {/* Progress Bar */}
+      {loading && (
+        <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+          <div
+            className="bg-blue-600 h-2.5 rounded-full"
+            style={{ width: `${uploadProgress}%` }}
+          ></div>
+        </div>
+      )}
+
       {/* Title */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -152,11 +168,8 @@ export const CreatePostForm = ({ onSuccess }: CreatePostFormProps) => {
         <input
           type="text"
           value={formData.title}
-          onChange={(e) => setFormData(prev => ({
-            ...prev,
-            title: e.target.value
-          }))}
-          className="w-full rounded-md border-gray-300 shadow-sm"
+          onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+          className="w-full"
         />
       </div>
 
@@ -167,64 +180,43 @@ export const CreatePostForm = ({ onSuccess }: CreatePostFormProps) => {
         </label>
         <textarea
           value={formData.description}
-          onChange={(e) => setFormData(prev => ({
-            ...prev,
-            description: e.target.value
-          }))}
-          rows={3}
-          className="w-full rounded-md border-gray-300 shadow-sm"
+          onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+          className="w-full"
         />
       </div>
 
       {/* Price */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Price (0 for free)
+          Price (in cents)
         </label>
         <input
           type="number"
-          min="0"
-          step="0.01"
           value={formData.price}
-          onChange={(e) => setFormData(prev => ({
-            ...prev,
-            price: parseFloat(e.target.value)
-          }))}
-          className="w-full rounded-md border-gray-300 shadow-sm"
+          onChange={(e) => setFormData(prev => ({ ...prev, price: Number(e.target.value) }))}
+          className="w-full"
         />
       </div>
 
-      {/* Visibility */}
-      <div>
-        <label className="flex items-center space-x-2">
-          <input
-            type="checkbox"
-            checked={formData.is_public}
-            onChange={(e) => setFormData(prev => ({
-              ...prev,
-              is_public: e.target.checked
-            }))}
-            className="rounded border-gray-300"
-          />
-          <span className="text-sm text-gray-700">Make this post public</span>
+      {/* Public Checkbox */}
+      <div className="flex items-center">
+        <input
+          type="checkbox"
+          checked={formData.is_public}
+          onChange={(e) => setFormData(prev => ({ ...prev, is_public: e.target.checked }))}
+          className="mr-2"
+        />
+        <label className="text-sm font-medium text-gray-700">
+          Public
         </label>
       </div>
-
-      {loading && (
-        <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-          <div
-            className="bg-blue-600 h-2.5 rounded-full"
-            style={{ width: `${uploadProgress}%` }}
-          ></div>
-        </div>
-      )}
 
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-2 px-4 bg-black text-white rounded-md hover:bg-gray-800 disabled:opacity-50"
+        className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50"
       >
-        {loading ? 'Uploading...' : 'Create Post'}
+        {loading ? 'Uploading...' : 'Submit'}
       </button>
     </form>
   );
