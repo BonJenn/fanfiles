@@ -24,6 +24,7 @@ export function ContentManagement({ userId }: ContentManagementProps) {
       const { data, error } = await supabase
         .from('posts')
         .select('*')
+        .eq('creator_id', userId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -33,7 +34,7 @@ export function ContentManagement({ userId }: ContentManagementProps) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [userId]);
 
   const handleDelete = async (postId: string) => {
     if (!user || user.id !== userId) {

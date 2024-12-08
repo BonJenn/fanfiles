@@ -149,26 +149,13 @@ export const PostCard = ({ post }: PostCardProps) => {
           />
         ) : (
           <div className="relative w-full h-full">
-            {isPlaying ? (
-              <video
-                src={post.url}
-                autoPlay
-                controls
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <>
-                <Image
-                  src={`${post.url}#t=0.1`} // Thumbnail from first frame
-                  alt={post.description}
-                  fill
-                  className={`object-cover transition-all duration-200 ${
-                    isBlurred ? 'blur-xl scale-110' : 'blur-0 scale-100'
-                  }`}
-                />
-                <PlayIcon className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-12 h-12 text-white opacity-80" />
-              </>
-            )}
+            <video
+              src={post.url}
+              autoPlay
+              muted
+              loop
+              className="w-full h-full object-cover"
+            />
           </div>
         )}
 

@@ -58,6 +58,24 @@ export const Feed = ({ subscribedContent, creatorId }: FeedProps) => {
           }
         }
 
+        // Apply sorting
+        switch (sortBy) {
+          case 'newest':
+            query = query.order('created_at', { ascending: false });
+            break;
+          case 'oldest':
+            query = query.order('created_at', { ascending: true });
+            break;
+          case 'price_high':
+            query = query.order('price', { ascending: false });
+            break;
+          case 'price_low':
+            query = query.order('price', { ascending: true });
+            break;
+          default:
+            break;
+        }
+
         const { data, error } = await query;
         if (error) throw error;
         setPosts(data || []);
@@ -69,7 +87,7 @@ export const Feed = ({ subscribedContent, creatorId }: FeedProps) => {
     };
 
     fetchPosts();
-  }, [contentType, searchQuery, subscribedContent, creatorId]);
+  }, [contentType, searchQuery, subscribedContent, creatorId, sortBy]);
 
   return (
     <div className="space-y-6">

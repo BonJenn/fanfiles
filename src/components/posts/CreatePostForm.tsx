@@ -15,10 +15,12 @@ export const CreatePostForm = ({ onSuccess }: CreatePostFormProps) => {
   const [formData, setFormData] = useState({
     file: null as File | null,
     type: 'image' as 'image' | 'video',
+    title: '',
     description: '',
     price: 0,
     is_public: true
   });
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -42,25 +44,38 @@ export const CreatePostForm = ({ onSuccess }: CreatePostFormProps) => {
 
     setLoading(true);
     setError(null);
+    setUploadProgress(0);
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // Upload file
+      // Upload file with progress tracking
       const fileExt = formData.file.name.split('.').pop();
       const fileName = `${user.id}-${Math.random()}.${fileExt}`;
       const { error: uploadError, data: _data } = await supabase.storage
         .from('posts')
-        .upload(fileName, formData.file);
+        .upload(fileName, formData.file, {
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setUploadProgress(percentCompleted);
+          }
+        });
 
       if (uploadError) throw uploadError;
 
-      // Create post record
+      // After uploading the file, construct the full URL
+      const storageUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/posts`;
+      const fileUrl = `${storageUrl}/${_data.path}`;
+
+      console.log('Constructed file URL:', fileUrl);
+
+      // Create post record with the full URL
       const { error: postError } = await supabase
         .from('posts')
         .insert({
-          url: _data.path,
+          title: formData.title,
+          url: fileUrl,
           type: formData.type,
           description: formData.description,
           price: formData.price,
@@ -74,6 +89,7 @@ export const CreatePostForm = ({ onSuccess }: CreatePostFormProps) => {
       setFormData({
         file: null,
         type: 'image',
+        title: '',
         description: '',
         price: 0,
         is_public: true
@@ -82,9 +98,8 @@ export const CreatePostForm = ({ onSuccess }: CreatePostFormProps) => {
       
       // Call success callback
       onSuccess?.();
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to create post';
-      setError(errorMessage);
+    } catch (err) {
+      setError(err.message || 'Failed to upload file. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -127,6 +142,22 @@ export const CreatePostForm = ({ onSuccess }: CreatePostFormProps) => {
             )}
           </div>
         )}
+      </div>
+
+      {/* Title */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Title
+        </label>
+        <input
+          type="text"
+          value={formData.title}
+          onChange={(e) => setFormData(prev => ({
+            ...prev,
+            title: e.target.value
+          }))}
+          className="w-full rounded-md border-gray-300 shadow-sm"
+        />
       </div>
 
       {/* Description */}
@@ -179,12 +210,21 @@ export const CreatePostForm = ({ onSuccess }: CreatePostFormProps) => {
         </label>
       </div>
 
+      {loading && (
+        <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+          <div
+            className="bg-blue-600 h-2.5 rounded-full"
+            style={{ width: `${uploadProgress}%` }}
+          ></div>
+        </div>
+      )}
+
       <button
         type="submit"
         disabled={loading}
         className="w-full py-2 px-4 bg-black text-white rounded-md hover:bg-gray-800 disabled:opacity-50"
       >
-        {loading ? 'Creating...' : 'Create Post'}
+        {loading ? 'Uploading...' : 'Create Post'}
       </button>
     </form>
   );
